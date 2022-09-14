@@ -25,8 +25,6 @@ There is a script to install everything. Run:
 bash <(wget -qO- --no-cache -o /dev/null https://raw.githubusercontent.com/chrisl8/PanicStations/original/setup.sh)
 ```
 
-Be sure to read the instructions that the script will print at the end about editing the config files in `~/.RobotAnything/`
-
 **A reboot will be required after the first install.**
 
 ## Setup
