@@ -2,9 +2,8 @@ const { exec } = require('child_process');
 const settings = require('./settings');
 
 const playSound = (sound) => {
-  // amixer sset PCM,0 81%;aplay 3.wav
   exec(
-    `amixer sset PCM,0 ${settings.volume.setting}%;aplay sounds/${sound}.wav`,
+    `amixer -q -M sset Headphone ${settings.volume.setting}%;aplay sounds/${sound}.wav`,
   );
 };
 
