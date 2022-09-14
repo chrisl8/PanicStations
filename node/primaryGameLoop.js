@@ -121,7 +121,7 @@ function init() {
               } else if (input.currentStatus !== previousStatus) {
                 // Switches tend to throw a lot of "on" status all at once and repeat the sound,
                 // so the check against previousStatus fixes that.
-                // TODO: Actually, I'm not sure that is true. The sound may just repeat in the wav file xD  Maybe undor this if that isn't the case.
+                // TODO: Actually, I'm not sure that is true. The sound may just repeat in the wav file xD  Maybe undo this if that isn't the case.
 
                 // Play random sound when game isn't running.
                 // TODO: Improve on this and/or make a function.
