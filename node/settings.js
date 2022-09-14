@@ -48,8 +48,8 @@ const settings = {
   volume: {
     setting: 65,
     zero: 0,
-    minimum: 50,
-    maximum: 98,
+    minimum: 0,
+    maximum: 100,
     knob: {
       pin: 'A6',
       potChangeThreshold: 5,
