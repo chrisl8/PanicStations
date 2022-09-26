@@ -6,7 +6,7 @@
     "json2csv": "^5.0.6",
     "jspack": "0.0.4",
     "node-pixel": "^0.11.0",
-    "pm2": "^4.5.4",
+    "pm2": "^5.2.0",
     "serialport": "^9.0.6"
   },
   "devDependencies": {
