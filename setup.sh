@@ -23,6 +23,8 @@ sudo apt upgrade -y
 PACKAGE_TO_INSTALL_LIST=()
 PACKAGE_TO_INSTALL_LIST+=(git)
 #git - Used to copy source code to pi
+PACKAGE_TO_INSTALL_LIST+=(build-essential)
+#build-essential - Required to build the node serialport binaries
 
 printf "\n${YELLOW}[Cloning or Updating git repositories]${NC}\n"
 cd
@@ -52,7 +54,7 @@ if [[ -e ${HOME}/.nvm/nvm.sh ]]; then
   nvm deactivate
 fi
 
-wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
 export NVM_DIR="${HOME}/.nvm"
 # shellcheck source=/home/chrisl8/.nvm/nvm.sh
 [[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh" # This loads nvm
@@ -63,7 +65,7 @@ if ! (grep NVM_SYMLINK_CURRENT ~/.bashrc >/dev/null); then
   sh -c "echo \"export NVM_SYMLINK_CURRENT=true\" >> ~/.bashrc"
 fi
 nvm install --lts
-nvm alias default "lts/*"
+nvm alias default node
 
 cd "${HOME}/${GIT_REPO_AND_FOLDER}/node"
 printf "\n${YELLOW}[Grabbing node dependencies for Node.js scripts]${NC}\n"

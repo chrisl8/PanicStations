@@ -1,5 +1,5 @@
 # Panic Stations
-![Alt text](PanicStations.jpg "Panic Stations Game")
+![Image of Pantic Stations Game](PanicStations.jpg "Panic Stations Game")
 
 This is the code for our Two Player Coop Panel project. It is based on the "Push The Button" game built and coded for the 2018 Winter ICT Game Jam. That code can be seen at the [ictGameJamWinter2018](https://github.com/chrisl8/ictGameJamWinter2018) repository.
 
@@ -14,9 +14,13 @@ For my panel this code runs on a Raspberry Pi, although it works just as well on
 
 ## Raspberry Pi Setup
 
-This is intended to run on a Raspberry Pi running **Raspbian** Lite.
+This is intended to run on a Raspberry Pi running **Raspbian** Lite. As of this writing I am using Raspberry Pi OS (32-bit) based on Debian **Bullseye**. Newer or older versions may or may not work without modification.
 
 Put a fresh copy of Raspbian (RASPBERRY PI OS LITE 32-BIT) on your Raspberry Pi then run the installation script below.
+
+You will need to connect a monitor to your Pi and follow the on screen setup instructions to get the OS fully set up and working, including connecting it to your network for installation of this code.
+
+Note that Rasbian has the SSH Server disabled by default. Follow thier instructions to [enable the SSH server on your Raspberry Pi](https://www.raspberrypi.com/documentation/computers/remote-access.html#enabling-the-server) if you want to do this remotely rather than from the pi itself.
 
 ## Install
 There is a script to install everything. Run:

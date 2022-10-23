@@ -1,4 +1,8 @@
 {
+  "name": "panicstations",
+  "short_name": "PanicStations",
+  "version": "0.0.1",
+  "description": "PanicStations Game",
   "license": "MIT",
   "dependencies": {
     "blessed": "^0.1.81",
@@ -6,21 +10,16 @@
     "json2csv": "^5.0.6",
     "jspack": "0.0.4",
     "node-pixel": "^0.11.0",
-    "pm2": "^4.5.4",
-    "serialport": "^9.0.6"
+    "pm2": "^5.2.2",
+    "serialport": "^10.4.0"
   },
   "devDependencies": {
-    "babel-eslint": "^10.1.0",
     "eslint": "^7.4.0",
     "eslint-config-airbnb": "^18.2.0",
-    "eslint-config-prettier": "^7.0.0",
+    "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-jest": "^24.0.0",
     "eslint-plugin-jsx-a11y": "^6.3.1",
-    "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.20.3",
-    "eslint-plugin-react-hooks": "^4.0.8",
-    "jest": "^26.4.2",
     "prettier": "^2.1.1"
   }
 }
