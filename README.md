@@ -20,13 +20,43 @@ Put a fresh copy of Raspbian (RASPBERRY PI OS LITE 32-BIT) on your Raspberry Pi 
 
 You will need to connect a monitor to your Pi and follow the on screen setup instructions to get the OS fully set up and working, including connecting it to your network for installation of this code.
 
+### SSH Remote Access to Pi
 Note that Rasbian has the SSH Server disabled by default. Follow thier instructions to [enable the SSH server on your Raspberry Pi](https://www.raspberrypi.com/documentation/computers/remote-access.html#enabling-the-server) if you want to do this remotely rather than from the pi itself.
+
+Copied here for convenience:
+
+```
+Launch Raspberry Pi Configuration from the Preferences menu
+
+Navigate to the Interfaces tab
+
+Select Enabled next to SSH
+
+Click OK
+```
+
+### Pi Serial Port Enable
+You **must** enable the serial port on the Pi before running the install below.
+
+Follow the [instructions to enable Serial port on Pi](https://serialport.io/docs/guide-installation#raspberry-pi-linux).
+
+Copied here for convenience:  
+```
+To enable the serial port on Raspbian, you launch raspi-config, then select Interfacing Options, then Serial. You will then be asked two questions:
+
+Would you like a login shell to be accessible over serial?
+Would you like the serial port hardware to be enabled?
+
+You must answer No to question 1 and Yes to question 2. If the login shell is left active, you will experience hangs and or disconnects.
+```
+
+A reboot will be required after this.
 
 ## Install
 There is a script to install everything. Run:
 
 ```
-bash <(wget -qO- --no-cache -o /dev/null https://raw.githubusercontent.com/chrisl8/PanicStations/original/setup.sh)
+bash <(wget -qO- --no-cache -o /dev/null https://raw.githubusercontent.com/chrisl8/PanicStations/main/setup.sh)
 ```
 
 **A reboot will be required after the first install.**
@@ -44,17 +74,6 @@ There are shell scripts to stop, start, restart, and view the log.
 
 ### Arduino
 The code itself is [Johnny-Five](http://johnny-five.io/) based, and requires Arduinos with the correct firmatta installed to read the button input, write the LED input, and communicate with this code running on your PC or Pi.
-
-Because I am using code to control Neopixels, you need a different Firmata for the Neopixel library to work.
-I wasn't able to make any of the automated programs written work,
-so I did this:
-
-1. Open up the Arduino program.
-2. Open the file `PanicStations/node/node_modules/node-pixel/firmware/build/node_pixel_firmata/node_pixel_firmata.ino` from the node_modules folder.
-3. Upload it to the Arduino like any program.
-
-If you just have the normal Firmata on the board instead of the special node_pixel version, you will get this error:
-IncorrectFirmataVersionError: Please upload NodePixel Firmata to the board
 
 ### Hardware Notes
 
