@@ -1,6 +1,6 @@
 const process = require('process');
-const SerialPort = require('serialport');
-const UsbDevice = require('./UsbDevice.js');
+const { SerialPort } = require('serialport');
+const UsbDevice = require('./UsbDevice');
 const wait = require('./wait');
 
 let working = false; // Prevent multiple instances from running at once in the same program
@@ -34,7 +34,8 @@ const commandList = {
  */
 
 function getPortObject(port) {
-  return new SerialPort(port, {
+  return new SerialPort({
+    path: port,
     baudRate: 19200,
   });
 }
@@ -227,7 +228,7 @@ async function display({
 module.exports = { display, getPortObject };
 
 if (require.main === module) {
-  (async function() {
+  (async function () {
     // Run the function if this is called directly instead of required as a module.
     if (process.argv.length < 3) {
       console.log(
