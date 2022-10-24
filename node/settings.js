@@ -18,10 +18,6 @@ const settings = {
     location: 'ID_SERIAL_SHORT',
     string: '55735303434351E090B0',
   },
-  neopixelArduinoPort: {
-    location: 'ID_SERIAL_SHORT',
-    string: '85534313837351F0F140',
-  },
   noTimeOut: false, // Give unlimited time for each input. For testing.
   soundFilenames: {
     success: '328120__kianda__powerup',

@@ -6,21 +6,12 @@ const json2csv = require('json2csv').parse;
 const stationList = require('./stationList');
 const gameState = require('./gameState');
 const settings = require('./settings');
-// const webServer = require('./webServer');
 const display = require('./display');
 const playSound = require('./playSound');
-const Pixels = require('./Pixels');
 
 const johnnyFiveObjects = {};
-const pixels = new Pixels();
 
 function init() {
-  // webServer();
-
-  // TODO: Starting this should be configurable.
-  // pixels.init(); // TODO: These are not working yet.
-  // TODO: See the Pixels.js run from command line for how to operate the pixels
-
   if (settings.runWithoutArduino) {
     gameState.boardInitiated = true;
   } else {

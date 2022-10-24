@@ -11,10 +11,6 @@ const stationTwoLcdPort = new UsbDevice(
   settings.stationTwoLcdPort.string,
   settings.stationTwoLcdPort.location,
 );
-const neopixelArduinoPort = new UsbDevice(
-  settings.neopixelArduinoPort.string,
-  settings.neopixelArduinoPort.location,
-);
 const primaryJohnnyFiveArduinoPort = new UsbDevice(
   settings.primaryJohnnyFiveArduinoPort.string,
   settings.primaryJohnnyFiveArduinoPort.location,
@@ -27,7 +23,7 @@ const primaryJohnnyFiveArduinoPort = new UsbDevice(
   display.initialize();
 
   // The Arduino FTDI chips DO have serial numbers on them, so they can be reliably found no matter where they are plugged in as long as the correct serial number is in settings.js
-  settings.neopixelArduinoPort.name = await neopixelArduinoPort.findDeviceName();
-  settings.primaryJohnnyFiveArduinoPort.name = await primaryJohnnyFiveArduinoPort.findDeviceName();
+  settings.primaryJohnnyFiveArduinoPort.name =
+    await primaryJohnnyFiveArduinoPort.findDeviceName();
   primaryGameLoop();
 })();
