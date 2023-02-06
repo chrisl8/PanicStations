@@ -9,12 +9,12 @@ set -e
 BLUE='\033[0;34m'
 GREEN='\033[0;32m'
 RED='\033[0;31m'
-PURPLE='\033[0;35m'
-LIGHT_PURPLE='\033[1;35m'
+#PURPLE='\033[0;35m'
+#LIGHT_PURPLE='\033[1;35m'
 YELLOW='\033[1;33m'
-LIGHTCYAN='\033[1;36m'
-LIGHTBLUE='\033[1;34m'
-LIGHTPURPLE='\033[1;35m'
+#LIGHTCYAN='\033[1;36m'
+#LIGHTBLUE='\033[1;34m'
+#LIGHTPURPLE='\033[1;35m'
 NC='\033[0m' # NoColor
 
 sudo apt update
@@ -54,7 +54,7 @@ if [[ -e ${HOME}/.nvm/nvm.sh ]]; then
   nvm deactivate
 fi
 
-wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
 export NVM_DIR="${HOME}/.nvm"
 # shellcheck source=/home/chrisl8/.nvm/nvm.sh
 [[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh" # This loads nvm
@@ -64,13 +64,19 @@ if ! (grep NVM_SYMLINK_CURRENT ~/.bashrc >/dev/null); then
   printf "\n${YELLOW}[Setting the NVM current environment in your .bashrc file]${NC}\n"
   sh -c "echo \"export NVM_SYMLINK_CURRENT=true\" >> ~/.bashrc"
 fi
-nvm install --lts
+nvm install node
+nvm use node
 nvm alias default node
+
+printf "\n${BRIGHT_MAGENTA}Installing latest NPM version${NC}\n"
+npm i -g npm
+
+printf "\n${BRIGHT_MAGENTA}Installing PM2${NC}\n"
+npm i -g pm2
 
 cd "${HOME}/${GIT_REPO_AND_FOLDER}/node"
 printf "\n${YELLOW}[Grabbing node dependencies for Node.js scripts]${NC}\n"
 printf "${BLUE}You may get some errors here, that is normal. As long as things work, it is OK.$NC\n"
-rm -rf node_modules
 npm ci
 
 if ! (crontab -l >/dev/null 2>&1) || ! (crontab -l | grep startService >/dev/null 2>&1); then

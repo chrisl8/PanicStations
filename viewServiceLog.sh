@@ -15,4 +15,4 @@ SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 # echo "${SCRIPT_DIR}" # For debugging
 
 cd "${SCRIPT_DIR}"/node/ || exit 1
-"${SCRIPT_DIR}"/node/node_modules/pm2/bin/pm2 log
+pm2 log
