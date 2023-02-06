@@ -6,10 +6,10 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
+    "@json2csv/node": "^6.1.2",
     "blessed": "^0.1.81",
     "es-main": "^1.2.0",
     "johnny-five": "^2.1.0",
-    "json2csv": "^5.0.7",
     "jspack": "0.0.4",
     "pm2": "^5.2.2",
     "serialport": "^10.4.0"

@@ -1,13 +1,15 @@
 /* eslint-disable no-param-reassign, func-names */
 import five from 'johnny-five';
 import fs from 'fs';
-import json2csv from 'json2csv';
+import { AsyncParser } from '@json2csv/node';
 
 import stationList from './stationList.js';
 import gameState from './gameState.js';
 import settings from './settings.js';
 import display from './display.js';
 import playSound from './playSound.js';
+
+const parser = new AsyncParser();
 
 const johnnyFiveObjects = {};
 
@@ -275,7 +277,7 @@ function updateDigitalReadout() {
   }
 }
 
-function primaryGameLoop() {
+async function primaryGameLoop() {
   if (!gameState.initCalled) {
     gameState.initCalled = true;
     init();
@@ -309,7 +311,7 @@ function primaryGameLoop() {
         });
         let csv;
         try {
-          csv = json2csv(gameState.statistics);
+          csv = await parser.parse(gameState.statistics).promise();
         } catch (err) {
           console.error(err);
         }
