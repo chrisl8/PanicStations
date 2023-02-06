@@ -1,7 +1,8 @@
-const process = require('process');
-const { SerialPort } = require('serialport');
-const UsbDevice = require('./UsbDevice');
-const wait = require('./wait');
+import process from 'process';
+import { SerialPort } from 'serialport';
+import esMain from 'es-main';
+import UsbDevice from './UsbDevice.js';
+import wait from './wait.js';
 
 let working = false; // Prevent multiple instances from running at once in the same program
 let displaySizeSet;
@@ -85,15 +86,11 @@ async function display({
     switch (operation) {
       case 'text': {
         if (!displaySizeSet) {
-          try {
-            // Set display size
-            // Note that it has to be in HEX
-            // I don't know why I have to set it to 5 lines instead of 4,
-            // but if I set it to 4, it only works for 3 lines.
-            await portObj.write(Buffer.from([0xfe, 0xd1, 0x14, 0x05]));
-          } catch (e) {
-            throw e;
-          }
+          // Set display size
+          // Note that it has to be in HEX
+          // I don't know why I have to set it to 5 lines instead of 4,
+          // but if I set it to 4, it only works for 3 lines.
+          await portObj.write(Buffer.from([0xfe, 0xd1, 0x14, 0x05]));
         }
         let output = input;
         // Make input match a full line length to avoid leaving garbage behind.
@@ -225,78 +222,76 @@ async function display({
   }
 }
 
-module.exports = { display, getPortObject };
+export default { display, getPortObject };
 
-if (require.main === module) {
-  (async function () {
-    // Run the function if this is called directly instead of required as a module.
-    if (process.argv.length < 3) {
-      console.log(
-        'You must provide command line parameters and operations. Here are examples:',
-      );
-      console.log('Display text on the screen:');
-      console.log("node LCD.js text 'Test'");
-      console.log('Display text on the screen and select a row:');
-      console.log("node LCD.js text 'line1' line1");
-      console.log("node LCD.js text 'line2' line2");
-      console.log("node LCD.js text 'line3' line3");
-      console.log("node LCD.js text 'line4' line4");
-      console.log('Send a specific hex code command:');
-      console.log('node LCD.js hex 0x58');
-      console.log(
-        'Change the background light color. <red> <green> <blue> are numbers from 0 to 255:',
-      );
-      console.log('node LCD.js color <red> <green> <blue>');
-      console.log('Along with some specific commands:');
-      console.log('node LCD.js displayOn');
-      console.log('node LCD.js displayOff');
-      console.log('node LCD.js clear');
-      console.log('node LCD.js brightness <number 0 to 255>');
-      console.log(
-        'node LCD.js contrast <number 0 to 255> 200 seems like a good default.',
-      );
-      process.exit();
-    }
-    const operation = process.argv[2];
-    let input = process.argv[3];
-    let row;
-    if (operation === 'text' && process.argv.length > 4) {
-      row = process.argv[3];
-      input = process.argv[4];
-    }
-    let red;
-    let green;
-    let blue;
-    if (operation === 'color') {
-      red = process.argv[3];
-      green = process.argv[4];
-      blue = process.argv[5];
-    }
-    let port;
-    try {
-      port = await getPortName();
-    } catch (e) {
-      console.error('Error getting LCD Display port:');
-      console.error(e);
-      process.exit(1);
-    }
-    console.log(port);
-    try {
-      const portObj = await getPortObject(port);
-      await display({
-        operation,
-        input,
-        runFromCommandLine: true,
-        row,
-        red,
-        green,
-        blue,
-        portObj,
-      });
-    } catch (e) {
-      console.error('Error writing to LCD Display:');
-      console.error(e);
-      process.exit(1);
-    }
-  })();
+if (esMain(import.meta)) {
+  // Run the function if this is called directly instead of required as a module.
+  if (process.argv.length < 3) {
+    console.log(
+      'You must provide command line parameters and operations. Here are examples:',
+    );
+    console.log('Display text on the screen:');
+    console.log("node LCD.js text 'Test'");
+    console.log('Display text on the screen and select a row:');
+    console.log("node LCD.js text 'line1' line1");
+    console.log("node LCD.js text 'line2' line2");
+    console.log("node LCD.js text 'line3' line3");
+    console.log("node LCD.js text 'line4' line4");
+    console.log('Send a specific hex code command:');
+    console.log('node LCD.js hex 0x58');
+    console.log(
+      'Change the background light color. <red> <green> <blue> are numbers from 0 to 255:',
+    );
+    console.log('node LCD.js color <red> <green> <blue>');
+    console.log('Along with some specific commands:');
+    console.log('node LCD.js displayOn');
+    console.log('node LCD.js displayOff');
+    console.log('node LCD.js clear');
+    console.log('node LCD.js brightness <number 0 to 255>');
+    console.log(
+      'node LCD.js contrast <number 0 to 255> 200 seems like a good default.',
+    );
+    process.exit();
+  }
+  const operation = process.argv[2];
+  let input = process.argv[3];
+  let row;
+  if (operation === 'text' && process.argv.length > 4) {
+    row = process.argv[3];
+    input = process.argv[4];
+  }
+  let red;
+  let green;
+  let blue;
+  if (operation === 'color') {
+    red = process.argv[3];
+    green = process.argv[4];
+    blue = process.argv[5];
+  }
+  let port;
+  try {
+    port = await getPortName();
+  } catch (e) {
+    console.error('Error getting LCD Display port:');
+    console.error(e);
+    process.exit(1);
+  }
+  console.log(port);
+  try {
+    const portObj = await getPortObject(port);
+    await display({
+      operation,
+      input,
+      runFromCommandLine: true,
+      row,
+      red,
+      green,
+      blue,
+      portObj,
+    });
+  } catch (e) {
+    console.error('Error writing to LCD Display:');
+    console.error(e);
+    process.exit(1);
+  }
 }

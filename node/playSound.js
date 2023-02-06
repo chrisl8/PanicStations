@@ -1,5 +1,5 @@
-const { exec } = require('child_process');
-const settings = require('./settings');
+import { exec } from 'child_process';
+import settings from './settings.js';
 
 const playSound = (sound) => {
   exec(
@@ -7,4 +7,4 @@ const playSound = (sound) => {
   );
 };
 
-module.exports = playSound;
+export default playSound;

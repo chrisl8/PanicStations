@@ -1,4 +1,4 @@
-const blessed = require('blessed');
+import blessed from 'blessed';
 
 const screenBoxes = {
   topBox: blessed.box({
@@ -208,4 +208,4 @@ const screenBoxes = {
   }),
 };
 
-module.exports = screenBoxes;
+export default screenBoxes;

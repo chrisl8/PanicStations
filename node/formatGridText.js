@@ -1,3 +1,5 @@
+import esMain from 'es-main';
+
 function formatGridText({ text, columns, rows }) {
   const lines = [];
   for (let i = 0; i < rows; i++) {
@@ -84,9 +86,9 @@ function formatGridText({ text, columns, rows }) {
   return lines;
 }
 
-module.exports = formatGridText;
+export default formatGridText;
 
-if (require.main === module) {
+if (esMain(import.meta)) {
   if (process.argv.length < 4) {
     console.log(
       'You must provide text adn the columns and rows of your display:',

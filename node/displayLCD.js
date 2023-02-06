@@ -1,7 +1,7 @@
-const lcd = require('./LCD20x4');
-const wait = require('./wait');
-const formatAndSendToLCD = require('./formatAndSendToLCD');
-const gameState = require('./gameState');
+import lcd from './LCD20x4.js';
+import wait from './wait.js';
+import formatAndSendToLCD from './formatAndSendToLCD.js';
+import gameState from './gameState.js';
 
 function centerLine(text) {
   if (text.length < 20 - 1) {
@@ -175,4 +175,4 @@ class DisplayLCD {
   }
 }
 
-module.exports = DisplayLCD;
+export default DisplayLCD;

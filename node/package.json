@@ -4,8 +4,10 @@
   "version": "0.0.1",
   "description": "PanicStations Game",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
     "blessed": "^0.1.81",
+    "es-main": "^1.2.0",
     "johnny-five": "^2.1.0",
     "json2csv": "^5.0.7",
     "jspack": "0.0.4",

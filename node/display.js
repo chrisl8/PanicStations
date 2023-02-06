@@ -1,6 +1,6 @@
-const settings = require('./settings');
-const screen = require('./displayScreen');
-const DisplayLCD = require('./displayLCD');
+import settings from './settings.js';
+import screen from './displayScreen.js';
+import DisplayLCD from './displayLCD.js';
 
 let lcd1;
 let lcd2;
@@ -27,7 +27,7 @@ function update(input) {
   }
 }
 
-module.exports = {
+export default {
   initialize,
   update,
 };

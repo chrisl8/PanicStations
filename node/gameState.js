@@ -28,4 +28,4 @@ const gameState = {
   statistics: [],
 };
 
-module.exports = gameState;
+export default gameState;

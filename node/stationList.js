@@ -600,4 +600,4 @@ stationList.push([
   },
 ]);
 
-module.exports = stationList;
+export default stationList;

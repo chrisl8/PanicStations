@@ -1,9 +1,11 @@
-const stationList = require('./stationList');
-const settings = require('./settings');
+import stationList from './stationList.js';
+import settings from './settings.js';
+
+// TODO: I'm not entirely sure if this will work or not.
+import screenBoxes from './screenBoxes.js';
 
 let blessed;
 let screen;
-let screenBoxes;
 
 function initialize() {
   if (!screen) {
@@ -12,9 +14,6 @@ function initialize() {
     screen = blessed.screen({
       smartCSR: true,
     });
-    // The boxes must not be defined before declaring a screen.
-    // eslint-disable-next-line global-require
-    screenBoxes = require('./screenBoxes');
 
     screen.title = 'Push the Button!';
 
@@ -106,8 +105,9 @@ function update({ state, data }) {
     case 'waitingForInput':
       screen.append(screenBoxes.leftBottomBox);
       screenBoxes.leftBottomBox.setContent(
-        `Time Left: ${data.maxTime * (1000 / settings.loopTime) -
-          data.timeElapsed}`,
+        `Time Left: ${
+          data.maxTime * (1000 / settings.loopTime) - data.timeElapsed
+        }`,
       );
       screen.append(screenBoxes.rightBottomBox);
       screenBoxes.rightBottomBox.setContent(`SCORE: ${data.score}`);
@@ -131,7 +131,7 @@ function update({ state, data }) {
   screen.render();
 }
 
-module.exports = {
+export default {
   initialize,
   update,
 };

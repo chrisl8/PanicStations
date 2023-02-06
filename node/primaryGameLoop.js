@@ -1,13 +1,13 @@
 /* eslint-disable no-param-reassign, func-names */
-const five = require('johnny-five');
-const fs = require('fs');
-const json2csv = require('json2csv').parse;
+import five from 'johnny-five';
+import fs from 'fs';
+import json2csv from 'json2csv';
 
-const stationList = require('./stationList');
-const gameState = require('./gameState');
-const settings = require('./settings');
-const display = require('./display');
-const playSound = require('./playSound');
+import stationList from './stationList.js';
+import gameState from './gameState.js';
+import settings from './settings.js';
+import display from './display.js';
+import playSound from './playSound.js';
 
 const johnnyFiveObjects = {};
 
@@ -211,6 +211,7 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// eslint-disable-next-line consistent-return
 function getRange(int) {
   const ranges = {
     down: { less: 10, greater: 950 },
@@ -552,4 +553,4 @@ function primaryGameLoop() {
   setTimeout(primaryGameLoop, settings.loopTime);
 }
 
-module.exports = primaryGameLoop;
+export default primaryGameLoop;
