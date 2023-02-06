@@ -9,7 +9,7 @@ import settings from './settings.js';
 import display from './display.js';
 import playSound from './playSound.js';
 
-const parser = new AsyncParser();
+const csvParser = new AsyncParser();
 
 const johnnyFiveObjects = {};
 
@@ -311,7 +311,7 @@ async function primaryGameLoop() {
         });
         let csv;
         try {
-          csv = await parser.parse(gameState.statistics).promise();
+          csv = await csvParser.parse(gameState.statistics).promise();
         } catch (err) {
           console.error(err);
         }
