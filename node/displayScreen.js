@@ -1,7 +1,7 @@
 import stationList from './stationList.js';
 import settings from './settings.js';
 
-// TODO: I'm not entirely sure if this will work or not.
+// TODO: This doesn't work. Not sure how to fix it, but I don't use it yet.
 import screenBoxes from './screenBoxes.js';
 
 let blessed;
