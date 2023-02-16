@@ -1,5 +1,6 @@
 # Panic Stations
-![Image of Pantic Stations Game](PanicStations.jpg "Panic Stations Game")
+![Image of Pantic Stations Game](PanicStations.jpg "Panic Stations Game")  
+![Image of Pantic Stations Game Reverse Side](PanicStationsReverseSide.jpg "Panic Stations Game Reverse Side")
 
 This is the code for our Two Player Coop Panel project. It is based on the "Push The Button" game built and coded for the 2018 Winter ICT Game Jam. That code can be seen at the [ictGameJamWinter2018](https://github.com/chrisl8/ictGameJamWinter2018) repository.
 
