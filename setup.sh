@@ -34,7 +34,7 @@ if ! [[ -d ${HOME}/${GIT_REPO_AND_FOLDER} ]]; then
   git clone https://github.com/chrisl8/${GIT_REPO_AND_FOLDER}.git
 else
   cd "${HOME}"/${GIT_REPO_AND_FOLDER}
-  #git pull # TODO: This won't work on my synced version. I'm not sure how to check for that.
+  git pull
 fi
 
 if ! (id | grep dialout >/dev/null); then
@@ -43,7 +43,7 @@ if ! (id | grep dialout >/dev/null); then
   printf "${RED}You may have to reboot before you can use USB ports.${NC}\n"
 fi
 
-printf "\n${YELLOW}[Installing and Initializing the Current Node LTS version]${NC}\n"
+printf "\n${YELLOW}[Installing and Initializing the Latest Node version]${NC}\n"
 
 printf "${BLUE}[Installing/Updating Node Version Manager]${NC}\n"
 if [[ -e ${HOME}/.nvm/nvm.sh ]]; then
