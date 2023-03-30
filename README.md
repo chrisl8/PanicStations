@@ -22,7 +22,7 @@ Put a fresh copy of Raspbian (RASPBERRY PI OS LITE 32-BIT) on your Raspberry Pi 
 You will need to connect a monitor to your Pi and follow the on screen setup instructions to get the OS fully set up and working, including connecting it to your network for installation of this code.
 
 ### SSH Remote Access to Pi
-Note that Rasbian has the SSH Server disabled by default. Follow thier instructions to [enable the SSH server on your Raspberry Pi](https://www.raspberrypi.com/documentation/computers/remote-access.html#enabling-the-server) if you want to do this remotely rather than from the pi itself.
+Note that Rasbian has the SSH Server disabled by default. Follow their instructions to [enable the SSH server on your Raspberry Pi](https://www.raspberrypi.com/documentation/computers/remote-access.html#enabling-the-server) if you want to do this remotely rather than from the pi itself.
 
 Copied here for convenience:
 
@@ -90,38 +90,35 @@ Switches: 32-53
 Small Buttons: 2-5, 8-13, 22-31
 
 ### Version 1.0 Improvements:
-    * Better box with fancy metalic looking paint.
-    * Character Displays on board so you don't have to look up at a monitor/TV to get your directions.
-    * 10 buttons per side instead of 5
-    * 11 switches per side instead of 5
-    * More "randomized" pattern for layout
-    * Lots of playability improvements in the code, but the game play logic is still the same.
-        * Positive "SUCCESS" confirmation when you perform your task before your team mate does.
-        * Knobs register when they leave the correct zone before your team mate performs their command
+* Better box with fancy metalic looking paint.
+* Character Displays on board so you don't have to look up at a monitor/TV to get your directions.
+* 10 buttons per side instead of 5
+* 11 switches per side instead of 5
+* More "randomized" pattern for layout
+* Lots of playability improvements in the code, but the game play logic is still the same.
+    * Positive "SUCCESS" confirmation when you perform your task before your team mate does.
+    * Knobs register when they leave the correct zone before your team mate performs their command
 
 ### Future Enhancements/TODO
-    * Lights on the switches and the knobs
-        * That is what the extra holes are for.
-    * Volume control
-    * Improved text and "interactivity" from system as you do things.
-    * String of lights along the side to indicate progress/score/etc.
-    * Alternate game modes
-        * Self driven Demo mode that just flasehs lights
-        * User driven demo mode where it just makes sounds and flashes lights when you push buttons an dturn knows.
-        * Use lights to "signal" which thing to switch when time runs short.
-        * Mode with no commands, just lights to say "push this"
-        * Single player mode
-        * Competitive mode
-            * Not really sure how to do this.
-    * Add pre-game menu options:
-        * Set player count?
-        * Set easy/normal/hard difficultly.
-    * Set "mode" for things like:
-        * Not game, just push buttons for noise and lights.
-        * "DEMO" Mode where it just makes lights
-        * "ENDLESS" mode where the game never ends, you just keep doing the next thing (no timer, or failure doesn't count against you)
-
-    * Adjust screen brightness and contrast (should reset to default on reboot/power cycle)
-
-    * Option to "Swap" LCD displays (and save port) if they are wrong.
-
+* Lights on the switches and the knobs
+    * That is what the extra holes are for.
+* ~~Volume control~~
+* Improved text and "interactivity" from system as you do things.
+* String of lights along the side to indicate progress/score/etc.
+* Alternate game modes
+    * Self driven Demo mode that just flashes lights
+    * User driven demo mode where it just makes sounds and flashes lights when you push buttons and turn knobs.
+    * Use lights to "signal" which thing to switch when time runs short.
+    * Mode with no commands, just lights to say "push this"
+    * Single player mode
+    * Competitive mode
+        * Not really sure how to do this.
+* Add pre-game menu options:
+    * Set player count?
+    * Set easy/normal/hard difficultly.
+* Set "mode" for things like:
+    * Not game, just push buttons for noise and lights.
+    * "DEMO" Mode where it just makes lights
+    * "ENDLESS" mode where the game never ends, you just keep doing the next thing (no timer or failure doesn't count against you)
+* Adjust screen brightness and contrast (should reset to default on reboot/power cycle)
+* Option to "Swap" LCD displays (and save port) if they are wrong.
