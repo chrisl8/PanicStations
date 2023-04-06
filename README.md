@@ -1,3 +1,5 @@
+[![Setup Script Test](https://github.com/chrisl8/PanicStations/actions/workflows/setup.yml/badge.svg)](https://github.com/chrisl8/PanicStations/actions/workflows/setup.yml)
+
 # Panic Stations
 ![Image of Pantic Stations Game](PanicStations.jpg "Panic Stations Game")  
 ![Image of Pantic Stations Game Reverse Side](PanicStationsReverseSide.jpg "Panic Stations Game Reverse Side")
@@ -12,6 +14,10 @@ You won't really be able to play it without building something.
 This game is inspired by the mobile game SpaceTeam.
 
 For my panel this code runs on a Raspberry Pi, although it works just as well on a PC. The Pi just allows me to make the project self contained.
+
+## Arduino Setup
+
+This code uses 
 
 ## Raspberry Pi Setup
 
@@ -76,20 +82,44 @@ There are shell scripts to stop, start, restart, and view the log.
 ## Hardware Setup
 
 ### Arduino
-The code itself is [Johnny-Five](http://johnny-five.io/) based, and requires Arduinos with the correct firmatta installed to read the button input, write the LED input, and communicate with this code running on your PC or Pi.
+The code itself is [Johnny-Five](http://johnny-five.io/) based, and requires one or more Arduino boards with the correct firmata installed to read the button input, write the LED input, and communicate with this code running on your PC or Pi.
+
+#### Installing Firmata on Arduino
+1. Download and Install the latest Arduino IDE for your OS from [Arduino Software](https://www.arduino.cc/en/software)
+2. Get the Firmata package by:
+   3. Open the Arduino IDE
+   4. Select the _Tools_ menu.
+   5. Select _Manage Libraries..._
+   6. Type `Firmata` into the search box.
+   7. Find the entry called `Firmata by Firmata Developers` and click _Install_ on it
+8. Open the StandardFirmataPlus file by:
+   9. Select the _File_ menu.
+   10. Select _Examples_
+   11. Select _Firmata_
+   12. Select _StandardFirmataPlus_
+       13. This will open up the StandardFirmataPlus.ino file
+14. Install the StandardFirmataPlus by:
+    15. Plug your Arduino board into the USB port on your computer
+    16. Select it in the dropdown near the top of the IDE
+    17. Select _Sketch_ -> _Upload_ or use the Upload button in the IDE
+
+This should upload the Standard Firmata Plus to your Arduino. From now on you won't need to use the Arduino IDE anymore or really think about the Arduino board's software. The [Johnny-Five](http://johnny-five.io/) library within the Node.js application will talk "through" the Arduino to the various components you connect to it. The Arduino has essentially become a peripheral for use by your Node.js code.
 
 ### Hardware Notes
 
+#### Arduino Pins
 Pins 6 & 7 are the lowest two pins I can seem to use the ARM switches on.
 I'm not sure what is up with pins 0 to 5. Need to look that up.
 
+#### Potentiometers
 Potentiometers must be powered with FIVE volts from Arduino, not the 3.3v line.
 
+#### Using Analog pins as Digital on Arduino with Johnny-Five
 To use Analog pins as Digital, use a number by adding the next pin up (54) to the A number.
 
-Using pins:
-Switches: 32-53
-Small Buttons: 2-5, 8-13, 22-31
+#### Pins in use by this project
+Switches: pins 32-53
+Small Buttons: pins 2-5, 8-13, 22-31
 
 ### Version 1.0 Improvements:
 * Better box with fancy metalic looking paint.
