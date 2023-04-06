@@ -11,45 +11,34 @@ class UsbDevice {
     this.stringLocation = stringLocation;
   }
 
-  findDeviceName() {
-    return new Promise((resolve, reject) => {
-      this.getLinuxUsbDeviceList()
-        .then((deviceList) => this.getInfoFromDeviceList(deviceList))
-        .then((infoDump) => {
-          let foundDevice = false;
-          let deviceName;
-          for (let i = 0; i < infoDump.length; i++) {
-            for (let j = 0; j < infoDump[i].deviceInfo.length; j++) {
-              if (infoDump[i].deviceInfo[j].includes(this.stringLocation)) {
-                const deviceStringLine = infoDump[i].deviceInfo[j].split('=');
-                if (deviceStringLine.length > 0) {
-                  const re = /"/g;
-                  infoDump[i].deviceString = deviceStringLine[1].replace(
-                    re,
-                    '',
-                  );
-                }
-                break;
-              }
-            }
-            if (infoDump[i].hasOwnProperty('deviceString')) {
-              if (infoDump[i].deviceString.includes(this.uniqueDeviceString)) {
-                foundDevice = true;
-                deviceName = `/dev/${infoDump[i].device}`;
-                break;
-              }
-            }
+  async findDeviceName() {
+    const linuxUsbDeviceList = await this.getLinuxUsbDeviceList();
+    // console.log(linuxUsbDeviceList);
+    const infoDump = await this.getInfoFromDeviceList(linuxUsbDeviceList);
+    // console.log(infoDump);
+    let deviceName;
+    for (let i = 0; i < infoDump.length; i++) {
+      for (let j = 0; j < infoDump[i].deviceInfo.length; j++) {
+        if (infoDump[i].deviceInfo[j].includes(this.stringLocation)) {
+          const deviceStringLine = infoDump[i].deviceInfo[j].split('=');
+          if (deviceStringLine.length > 0) {
+            const re = /"/g;
+            infoDump[i].deviceString = deviceStringLine[1].replace(re, '');
           }
-          if (foundDevice) {
-            resolve(deviceName);
-          } else {
-            reject(new Error('Not found.'));
-          }
-        })
-        .catch((error) => {
-          console.log(`ERROR: ${error}`);
-        });
-    });
+          break;
+        }
+      }
+      if (infoDump[i].hasOwnProperty('deviceString')) {
+        if (infoDump[i].deviceString.includes(this.uniqueDeviceString)) {
+          deviceName = `/dev/${infoDump[i].device}`;
+          break;
+        }
+      }
+    }
+    if (deviceName) {
+      return deviceName;
+    }
+    throw new Error('Not found.');
   }
 
   getLinuxUsbDeviceList() {
