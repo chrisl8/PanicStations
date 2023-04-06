@@ -62,6 +62,8 @@ bash <(wget -qO- --no-cache -o /dev/null https://raw.githubusercontent.com/chris
 
 **A reboot will be required after the first install.**
 
+**NOTICE: If your LCD Displays are brand new, some settings will be saved to them on first run that will not take affect until they are power cycled once. So you may need to power them down by unplugging them from USB or powering off the Pi at least once after the first run before they will display correclty.**
+
 ## Setup
 
 There are some settings that you may need to tweak in `node/settings.js`. These should be in some non-committed file, but that is a project for a future update.

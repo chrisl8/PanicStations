@@ -87,6 +87,8 @@ async function display({
       case 'text': {
         if (!displaySizeSet) {
           // Set display size
+          // NOTE: You have to power cycle the display before this takes affect!
+          //       Also this is written to the backpack EEPROM so technically it only needs be set once.
           // Note that it has to be in HEX
           // I don't know why I have to set it to 5 lines instead of 4,
           // but if I set it to 4, it only works for 3 lines.
