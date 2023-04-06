@@ -3,6 +3,8 @@ import { spawn } from 'child_process';
 import fs from 'fs';
 import esMain from 'es-main';
 
+const isWindows = process.platform === 'win32';
+
 class UsbDevice {
   constructor(uniqueDeviceString, stringLocation) {
     this.uniqueDeviceString = uniqueDeviceString;
@@ -12,33 +14,38 @@ class UsbDevice {
   }
 
   async findDeviceName() {
-    const linuxUsbDeviceList = await this.getLinuxUsbDeviceList();
-    // console.log(linuxUsbDeviceList);
-    const infoDump = await this.getInfoFromDeviceList(linuxUsbDeviceList);
-    // console.log(infoDump);
     let deviceName;
-    for (let i = 0; i < infoDump.length; i++) {
-      for (let j = 0; j < infoDump[i].deviceInfo.length; j++) {
-        if (infoDump[i].deviceInfo[j].includes(this.stringLocation)) {
-          const deviceStringLine = infoDump[i].deviceInfo[j].split('=');
-          if (deviceStringLine.length > 0) {
-            const re = /"/g;
-            infoDump[i].deviceString = deviceStringLine[1].replace(re, '');
+    let errorMessage = 'Not found.';
+    if (isWindows) {
+      errorMessage = 'Windows not yet supported.';
+    } else {
+      const linuxUsbDeviceList = await this.getLinuxUsbDeviceList();
+      // console.log(linuxUsbDeviceList);
+      const infoDump = await this.getInfoFromDeviceList(linuxUsbDeviceList);
+      // console.log(infoDump);
+      for (let i = 0; i < infoDump.length; i++) {
+        for (let j = 0; j < infoDump[i].deviceInfo.length; j++) {
+          if (infoDump[i].deviceInfo[j].includes(this.stringLocation)) {
+            const deviceStringLine = infoDump[i].deviceInfo[j].split('=');
+            if (deviceStringLine.length > 0) {
+              const re = /"/g;
+              infoDump[i].deviceString = deviceStringLine[1].replace(re, '');
+            }
+            break;
           }
-          break;
         }
-      }
-      if (infoDump[i].hasOwnProperty('deviceString')) {
-        if (infoDump[i].deviceString.includes(this.uniqueDeviceString)) {
-          deviceName = `/dev/${infoDump[i].device}`;
-          break;
+        if (infoDump[i].hasOwnProperty('deviceString')) {
+          if (infoDump[i].deviceString.includes(this.uniqueDeviceString)) {
+            deviceName = `/dev/${infoDump[i].device}`;
+            break;
+          }
         }
       }
     }
     if (deviceName) {
       return deviceName;
     }
-    throw new Error('Not found.');
+    throw new Error(errorMessage);
   }
 
   getLinuxUsbDeviceList() {
