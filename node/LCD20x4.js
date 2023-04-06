@@ -8,8 +8,18 @@ let working = false; // Prevent multiple instances from running at once in the s
 let displaySizeSet;
 
 async function getPortName() {
-  // NOTE: This works if you have one display, but if you have two, you might have to hard code this.
-  const relayDevice = new UsbDevice('Adafruit_Industries', 'ID_MODEL');
+  const isWindows = process.platform === 'win32';
+
+  let relayDevice;
+  if (isWindows) {
+    relayDevice = new UsbDevice(
+      'Adafruit Industries',
+      'DEVPKEY_Device_BusReportedDeviceDesc',
+    );
+  } else {
+    // NOTE: This works if you have one display, but if you have two, you might have to hard code this.
+    relayDevice = new UsbDevice('Adafruit_Industries', 'ID_MODEL');
+  }
   return relayDevice.findDeviceName();
 }
 

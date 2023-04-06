@@ -1,7 +1,10 @@
 /* eslint-disable no-param-reassign */
-import { spawn } from 'child_process';
+import { promisify } from 'util';
+import { exec, spawn } from 'child_process';
 import fs from 'fs';
 import esMain from 'es-main';
+
+const asyncExec = promisify(exec);
 
 const isWindows = process.platform === 'win32';
 
@@ -15,14 +18,41 @@ class UsbDevice {
 
   async findDeviceName() {
     let deviceName;
-    let errorMessage = 'Not found.';
     if (isWindows) {
-      errorMessage = 'Windows not yet supported.';
+      // https://learn.microsoft.com/en-us/windows-hardware/drivers/devtest/pnputil-command-syntax
+      // PnPUtil (PnPUtil.exe) is included in every version of Windows starting with Windows Vista, in the %windir%\system32 directory.
+      // Unfortunately:
+      // Enumerate all devices on the system. Command available starting in Windows 10 version 1903.
+      // /properties flag became available starting in Windows 11 version 21H2
+      const { stdout } = await asyncExec(
+        'pnputil.exe /enum-devices /class Ports /connected /properties',
+      );
+      if (stdout) {
+        const outputAsArray = String(stdout).split('\n'); // parse Windows device data to find the one we want.
+        let possiblePort;
+        for (let i = 0; i < outputAsArray.length; i++) {
+          if (outputAsArray[i].split(':')[0] === 'Device Description') {
+            if (outputAsArray[i].includes('(COM')) {
+              possiblePort = outputAsArray[i]
+                .trim()
+                .split('(')[1]
+                .split(')')[0];
+            } else {
+              possiblePort = null;
+            }
+          } else if (
+            possiblePort &&
+            outputAsArray[i].includes(this.stringLocation) &&
+            outputAsArray[i + 1].trim() === this.uniqueDeviceString
+          ) {
+            deviceName = possiblePort;
+          }
+        }
+      }
     } else {
       const linuxUsbDeviceList = await this.getLinuxUsbDeviceList();
-      // console.log(linuxUsbDeviceList);
       const infoDump = await this.getInfoFromDeviceList(linuxUsbDeviceList);
-      // console.log(infoDump);
+      // Parse Linux USB Device data to find the one we want.
       for (let i = 0; i < infoDump.length; i++) {
         for (let j = 0; j < infoDump[i].deviceInfo.length; j++) {
           if (infoDump[i].deviceInfo[j].includes(this.stringLocation)) {
@@ -45,7 +75,7 @@ class UsbDevice {
     if (deviceName) {
       return deviceName;
     }
-    throw new Error(errorMessage);
+    throw new Error('Not found.');
   }
 
   getLinuxUsbDeviceList() {
@@ -123,7 +153,7 @@ if (esMain(import.meta)) {
       console.log(`${deviceName}`);
     })
     .catch((error) => {
-      console.log(`ERROR: ${error}`);
+      console.log(`ERROR: ${error.message}`);
       process.exit(1);
     });
 }
