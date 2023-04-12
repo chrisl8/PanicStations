@@ -15,10 +15,6 @@ This game is inspired by the mobile game SpaceTeam.
 
 For my panel this code runs on a Raspberry Pi, although it works just as well on a PC. The Pi just allows me to make the project self contained.
 
-## Arduino Setup
-
-This code uses 
-
 ## Raspberry Pi Setup
 
 This is intended to run on a Raspberry Pi running **Raspbian** Lite. As of this writing I am using Raspberry Pi OS (32-bit) based on Debian **Bullseye**. Newer or older versions may or may not work without modification.
@@ -104,6 +100,20 @@ The code itself is [Johnny-Five](http://johnny-five.io/) based, and requires one
     17. Select _Sketch_ -> _Upload_ or use the Upload button in the IDE
 
 This should upload the Standard Firmata Plus to your Arduino. From now on you won't need to use the Arduino IDE anymore or really think about the Arduino board's software. The [Johnny-Five](http://johnny-five.io/) library within the Node.js application will talk "through" the Arduino to the various components you connect to it. The Arduino has essentially become a peripheral for use by your Node.js code.
+
+#### 4-Digit 7-Segment Display with Adafruit HT16K33 Backpack
+Hardware Link: https://www.adafruit.com/product/1002  
+Instructions: https://learn.adafruit.com/adafruit-led-backpack/0-dot-56-seven-segment-backpack-assembly  
+
+##### Pins
+ - `+` VCC 5 volts
+ - `-` GROUND
+ - `SDA` "SDA" Pin on Arduino
+ - `SCL` "SCL" Pin on Arduino
+
+##### Testing 
+
+Use the `node/testHardware/testDigitalReadout.js` script to test it and learn how to use it.
 
 ### Hardware Notes
 
