@@ -12,7 +12,7 @@
     "johnny-five": "^2.1.0",
     "jspack": "0.0.4",
     "pm2": "^5.2.2",
-    "serialport": "^10.4.0"
+    "serialport": "^11.0.0"
   },
   "devDependencies": {
     "eslint": "^8.26.0",
