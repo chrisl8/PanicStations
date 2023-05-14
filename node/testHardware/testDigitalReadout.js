@@ -1,6 +1,7 @@
 import five from 'johnny-five';
 import settings from '../settings.js';
 import wait from '../wait.js';
+import pad from '../include/pad.js';
 
 const board = new five.Board({
   port: 'COM6',
@@ -19,6 +20,7 @@ board.on('ready', async () => {
   const led = new five.Led(13);
   led.blink(500);
 
+  // http://johnny-five.io/api/led.digits/
   const digitalReadout = new five.Led.Digits({
     controller: 'HT16K33',
   });
@@ -31,6 +33,17 @@ board.on('ready', async () => {
   await wait(5000);
   console.log('Digital Readout Brightness: 10');
   digitalReadout.brightness(10);
+  console.log('Digital Readout: ABCD');
+  digitalReadout.print('ABCD');
+  await wait(5000);
+  let startingNumber = 1000;
+  console.log(`Digital Readout: Countdown from ${startingNumber} to 0`);
+  while (startingNumber > -1) {
+    const output = pad(startingNumber, 4);
+    digitalReadout.print(output);
+    startingNumber--;
+    await wait(50);
+  }
   await wait(5000);
   console.log('Digital Readout Brightness: 75');
   digitalReadout.brightness(75);
