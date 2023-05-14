@@ -8,6 +8,7 @@ import gameState from './gameState.js';
 import settings from './settings.js';
 import display from './display.js';
 import playSound from './playSound.js';
+import pad from './include/pad.js';
 
 const csvParser = new AsyncParser();
 
@@ -240,12 +241,6 @@ function getRandVector() {
   const possibleVectors = ['up', 'left', 'right'];
   const rand = Math.floor(Math.random() * possibleVectors.length);
   return possibleVectors[rand];
-}
-
-function pad(num, size) {
-  let s = `${num}`;
-  while (s.length < size) s = `0${s}`;
-  return s;
 }
 
 function updateMaxTime() {
