@@ -1,19 +1,22 @@
+import esMain from 'es-main';
+import blessed from 'blessed';
 import stationList from './stationList.js';
 import settings from './settings.js';
+import createScreenBoxes from './createScreenBoxes.js';
+import wait from './include/wait.js';
 
-// TODO: This doesn't work. Not sure how to fix it, but I don't use it yet.
-import screenBoxes from './screenBoxes.js';
-
-let blessed;
 let screen;
+let screenBoxes;
 
 function initialize() {
   if (!screen) {
-    // eslint-disable-next-line global-require
-    blessed = require('blessed');
     screen = blessed.screen({
       smartCSR: true,
     });
+  }
+
+  if (!screenBoxes) {
+    screenBoxes = createScreenBoxes.initialize();
 
     screen.title = 'Push the Button!';
 
@@ -27,15 +30,18 @@ function initialize() {
 
     // Quit on Escape, q, or Control-C.
     screen.key(['escape', 'q', 'C-c'], () => process.exit(0));
-
-    // Render the screen.
-    screen.render();
   }
+
+  // Render the screen.
+  screen.render();
 }
 
 function update({ state, data }) {
-  // TODO: Remember, if the logic gets too crazy here, then keep the logic
-  // TODO: in the primaryGameLoop and add more individual state options here.
+  /*
+  / NOTE:
+  / If the logic gets too crazy here, then keep the logic
+  / in the primaryGameLoop and add more individual state options here.
+  */
   switch (state) {
     case 'intro':
       screen.append(screenBoxes.introductionBox);
@@ -125,7 +131,9 @@ function update({ state, data }) {
       );
       break;
     default:
-      screen.render();
+      if (data) {
+        screenBoxes.introductionBox.setContent(data);
+      }
       break;
   }
   screen.render();
@@ -135,3 +143,13 @@ export default {
   initialize,
   update,
 };
+
+if (esMain(import.meta)) {
+  // If this fails you can try running it with `TERM=xterm` like:
+  // TERM=xterm node displayScreen.js
+  initialize();
+  await wait(1000);
+  update({ state: 'intro' });
+  await wait(5000);
+  update({ data: `Press 'q' to exit.` });
+}

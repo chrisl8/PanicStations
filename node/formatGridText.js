@@ -91,7 +91,7 @@ export default formatGridText;
 if (esMain(import.meta)) {
   if (process.argv.length < 4) {
     console.log(
-      'You must provide text adn the columns and rows of your display:',
+      'You must provide text and the columns and rows of your display:',
     );
     console.log(`node formatGridText 'Hello World!' 20 4`);
     process.exit();
