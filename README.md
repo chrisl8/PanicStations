@@ -24,22 +24,16 @@ Put a fresh copy of Raspbian (RASPBERRY PI OS LITE 32-BIT) on your Raspberry Pi 
 You will need to connect a monitor to your Pi and follow the on screen setup instructions to get the OS fully set up and working, including connecting it to your network for installation of this code.
 
 ### SSH Remote Access to Pi
-Note that Rasbian has the SSH Server disabled by default. Follow their instructions to [enable the SSH server on your Raspberry Pi](https://www.raspberrypi.com/documentation/computers/remote-access.html#enabling-the-server) if you want to do this remotely rather than from the pi itself.
+Note that Raspbian has the SSH Server disabled by default. Follow their instructions to [enable the SSH server on your Raspberry Pi](https://www.raspberrypi.com/documentation/computers/remote-access.html#enabling-the-server) if you want to do this remotely rather than from the pi itself.
 
 Copied here for convenience:
-
-```
-Launch Raspberry Pi Configuration from the Preferences menu
-
-Navigate to the Interfaces tab
-
-Select Enabled next to SSH
-
-Click OK
-```
+ - Launch Raspberry Pi Configuration from the Preferences menu
+ - Navigate to the Interfaces tab
+ - Select Enabled next to SSH
+ - Click OK
 
 ### Pi Serial Port Enable
-You **must** enable the serial port on the Pi before running the install below.
+You **must** enable the serial port on the Pi before running the install script below.
 
 Follow the [instructions to enable Serial port on Pi](https://serialport.io/docs/guide-installation#raspberry-pi-linux).
 
@@ -132,33 +126,55 @@ Switches: pins 32-53
 Small Buttons: pins 2-5, 8-13, 22-31
 
 ### Version 1.0 Improvements:
-* Better box with fancy metalic looking paint.
-* Character Displays on board so you don't have to look up at a monitor/TV to get your directions.
+* Better box with fancy metallic looking paint.
+* Character Displays on board, so you don't have to look up at a monitor/TV to get your directions.
 * 10 buttons per side instead of 5
 * 11 switches per side instead of 5
 * More "randomized" pattern for layout
 * Lots of playability improvements in the code, but the game play logic is still the same.
-    * Positive "SUCCESS" confirmation when you perform your task before your team mate does.
-    * Knobs register when they leave the correct zone before your team mate performs their command
+    * Positive "SUCCESS" confirmation when you perform your task before your teammate does.
+    * Knobs register when they leave the correct zone before your teammate performs their command
+
+### Plan
+1. Create a minimal "game" first consisting of simply:
+   2. One button, then
+      3. The "push" command must be on screen if there is no LED.
+      4. Should there be an option for "use console for direction" vs. "use screen for debug output"?
+   3. One button, and one LED, then
+   4. One button, and one LED, and one LCD screen.
+5. Convert the setup files to be JSON5 and all in one file.
+6. Create an example for:
+   7. Each of the options above, and make it work.
+   8. The Panic Stations, and make it work.
+   9. TARDIS Console (initially with ONE panel).
+10. Make all 3 above work both from CLI and PM2 on both Linux and Windows.
+11. Write up instructions for each, especially for a user to use this code with One Button.
+10. Add the "Options" input switch.
+11. Define a "Start" button.
+12. Change game to allow starting with <all stations armed
+13. ... see below for more ideas and decide what to do next...
 
 ### Future Enhancements/TODO
+* Ability to "start" game with fewer than all panels armed.
+  * Starting with just ONE panel armed should allow a single player game.
 * Lights on the switches and the knobs
     * That is what the extra holes are for.
 * ~~Volume control~~
+  * Test this, as it seems unreliable
 * Improved text and "interactivity" from system as you do things.
 * String of lights along the side to indicate progress/score/etc.
 * Alternate game modes
-    * Self driven Demo mode that just flashes lights
+    * Self-driven Demo mode that just flashes lights
     * User driven demo mode where it just makes sounds and flashes lights when you push buttons and turn knobs.
     * Use lights to "signal" which thing to switch when time runs short.
     * Mode with no commands, just lights to say "push this"
     * Single player mode
     * Competitive mode
-        * Not really sure how to do this.
 * Add pre-game menu options:
-    * Set player count?
     * Set easy/normal/hard difficultly.
 * Set "mode" for things like:
+    * Competitive mode
+    * Coop mode
     * Not game, just push buttons for noise and lights.
     * "DEMO" Mode where it just makes lights
     * "ENDLESS" mode where the game never ends, you just keep doing the next thing (no timer or failure doesn't count against you)

@@ -3,6 +3,8 @@ import primaryGameLoop from './primaryGameLoop.js';
 import settings from './settings.js';
 import UsbDevice from './UsbDevice.js';
 
+console.log(settings);
+
 const stationOneLcdPort = new UsbDevice(
   settings.stationOneLcdPort.string,
   settings.stationOneLcdPort.location,
