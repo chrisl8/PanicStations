@@ -7,7 +7,7 @@ import readObjectFromFile from './readObjectFromFile.js';
 const __filename = fileURLToPath(import.meta.url);
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = dirname(__filename);
-const configFile = `${__dirname}/../settings.json5`;
+const configFile = `${__dirname}/../../settings.json5`;
 
 async function loadSettings() {
   let configObject;

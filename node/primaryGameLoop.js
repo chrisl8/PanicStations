@@ -3,7 +3,6 @@ import five from 'johnny-five';
 import fs from 'fs';
 import { AsyncParser } from '@json2csv/node';
 
-import stationList from './stationList.js';
 import gameState from './gameState.js';
 import display from './display.js';
 import playSound from './playSound.js';
@@ -75,9 +74,15 @@ function init() {
         }
       });
 
-      for (let i = 0; i < stationList.length; i++) {
-        stationList[i].forEach((input) => {
-          if (['switch', 'button'].indexOf(input.type) !== -1) {
+      for (let i = 0; i < settings.stationList.length; i++) {
+        // eslint-disable-next-line no-loop-func
+        settings.stationList[i].forEach((input) => {
+          if (
+            ['switch', 'button'].indexOf(input.type) !== -1 &&
+            settings.hasOwnProperty('soundFilenames') &&
+            settings.soundFilenames.hasOwnProperty('incorrect') &&
+            settings.soundFilenames.hasOwnProperty('success')
+          ) {
             let isPullup = true;
             if (input.subType === 'arm') {
               isPullup = false;
@@ -113,7 +118,12 @@ function init() {
                 input.subType === 'arm'
               ) {
                 playSound({ sound: soundName, settings });
-              } else if (input.currentStatus !== previousStatus) {
+              } else if (
+                input.currentStatus !== previousStatus &&
+                settings.soundFilenames.hasOwnProperty('random') &&
+                Array.isArray(settings.soundFilenames.random) &&
+                settings.soundFilenames.random.length > 1
+              ) {
                 // Switches tend to throw a lot of "on" status all at once and repeat the sound,
                 // so the check against previousStatus fixes that.
                 // TODO: Actually, I'm not sure that is true. The sound may just repeat in the wav file xD  Maybe undo this if that isn't the case.
@@ -285,9 +295,14 @@ async function primaryGameLoop(initSettings) {
     if (gameState.atGameIntro) {
       updateDigitalReadout();
       display.update({ settings, state: 'intro' });
+      // TODO: This requires all panels to be armed to start.
+      //       Change this to allow playing with only the armed panels,
+      //       when at least one is armed and a "start" button is pressed.
+      // TODO: This update must be applied to ALL locations that make use of the
+      //       stationList variable.
       if (
-        stationList[0][0].currentStatus === 'on' &&
-        stationList[1][0].currentStatus === 'on'
+        settings.stationList[0][0].currentStatus === 'on' &&
+        settings.stationList[1][0].currentStatus === 'on'
       ) {
         gameState.atGameIntro = false;
       }
@@ -330,8 +345,8 @@ async function primaryGameLoop(initSettings) {
         gameState.gameOverTasksCompleted = true;
       }
       if (
-        stationList[0][0].currentStatus === 'off' &&
-        stationList[1][0].currentStatus === 'off'
+        settings.stationList[0][0].currentStatus === 'off' &&
+        settings.stationList[1][0].currentStatus === 'off'
       ) {
         gameState.gameOver = false;
         gameState.gameOverTasksCompleted = false;
@@ -358,17 +373,17 @@ async function primaryGameLoop(initSettings) {
     } else if (gameState.waitingForInput) {
       let done = false;
       let player1done =
-        stationList[0][gameState.stationsInPlay[0]].hasBeenPressed;
+        settings.stationList[0][gameState.stationsInPlay[0]].hasBeenPressed;
       let player2done =
-        stationList[1][gameState.stationsInPlay[1]].hasBeenPressed;
+        settings.stationList[1][gameState.stationsInPlay[1]].hasBeenPressed;
 
       if (
         player1done &&
-        stationList[0][gameState.stationsInPlay[0]].type === 'knob'
+        settings.stationList[0][gameState.stationsInPlay[0]].type === 'knob'
       ) {
         if (
           getRange(
-            stationList[0][gameState.stationsInPlay[0]].currentStatus,
+            settings.stationList[0][gameState.stationsInPlay[0]].currentStatus,
           ) !== gameState.requiredKnobPosition1
         ) {
           player1done = false;
@@ -377,12 +392,15 @@ async function primaryGameLoop(initSettings) {
 
       if (
         player2done &&
-        stationList[1][gameState.stationsInPlay[1]].type === 'knob'
+        settings.stationList[1][gameState.stationsInPlay[1]].type === 'knob'
       ) {
-        if (stationList[1][gameState.stationsInPlay[1]].type === 'knob') {
+        if (
+          settings.stationList[1][gameState.stationsInPlay[1]].type === 'knob'
+        ) {
           if (
             getRange(
-              stationList[1][gameState.stationsInPlay[1]].currentStatus,
+              settings.stationList[1][gameState.stationsInPlay[1]]
+                .currentStatus,
             ) !== gameState.requiredKnobPosition2
           ) {
             player2done = false;
@@ -452,7 +470,7 @@ async function primaryGameLoop(initSettings) {
 
       // Clear all inputs
       for (let i = 0; i < stationList.length; i++) {
-        stationList[i].forEach((button) => {
+        settings.stationList[i].forEach((button) => {
           button.hasBeenPressed = false;
           button.correct = false;
         });
@@ -482,7 +500,7 @@ async function primaryGameLoop(initSettings) {
       do {
         gameState.stationsInPlay[0] = getRandomInt(
           1,
-          stationList[0].length - 1,
+          settings.stationList[0].length - 1,
         );
       } while (
         gameState.recentInputList[0].indexOf(gameState.stationsInPlay[0]) !== -1
@@ -493,7 +511,7 @@ async function primaryGameLoop(initSettings) {
       do {
         gameState.stationsInPlay[1] = getRandomInt(
           1,
-          stationList[1].length - 1,
+          settings.stationList[1].length - 1,
         );
       } while (
         gameState.recentInputList[1].indexOf(gameState.stationsInPlay[1]) !== -1
@@ -502,43 +520,51 @@ async function primaryGameLoop(initSettings) {
       gameState.recentInputList[1].shift();
 
       let displayNameForStation1 =
-        stationList[0][gameState.stationsInPlay[0]].label;
-      stationList[0][gameState.stationsInPlay[0]].correct = true;
+        settings.stationList[0][gameState.stationsInPlay[0]].label;
+      settings.stationList[0][gameState.stationsInPlay[0]].correct = true;
       let displayNameForStation2 =
-        stationList[1][gameState.stationsInPlay[1]].label;
-      stationList[1][gameState.stationsInPlay[1]].correct = true;
+        settings.stationList[1][gameState.stationsInPlay[1]].label;
+      settings.stationList[1][gameState.stationsInPlay[1]].correct = true;
 
       for (let i = 0; i < gameState.stationsArmed; i++) {
         let knobDirection = getRandVector();
         while (
           knobDirection ===
-          getRange(stationList[i][gameState.stationsInPlay[i]].currentStatus)
+          getRange(
+            settings.stationList[i][gameState.stationsInPlay[i]].currentStatus,
+          )
         ) {
           knobDirection = getRandVector();
         }
         let displayName;
-        if (stationList[i][gameState.stationsInPlay[i]].type === 'button') {
-          displayName = stationList[i][gameState.stationsInPlay[i]].funName;
+        if (
+          settings.stationList[i][gameState.stationsInPlay[i]].type === 'button'
+        ) {
+          displayName =
+            settings.stationList[i][gameState.stationsInPlay[i]].funName;
         } else if (
-          stationList[i][gameState.stationsInPlay[i]].type === 'switch'
+          settings.stationList[i][gameState.stationsInPlay[i]].type === 'switch'
         ) {
           if (
-            stationList[i][gameState.stationsInPlay[i]].currentStatus === 'on'
+            settings.stationList[i][gameState.stationsInPlay[i]]
+              .currentStatus === 'on'
           ) {
             displayName = `Turn ${
-              stationList[i][gameState.stationsInPlay[i]].funName
+              settings.stationList[i][gameState.stationsInPlay[i]].funName
             } Off.`;
           } else {
             displayName = `Turn ${
-              stationList[i][gameState.stationsInPlay[i]].funName
+              settings.stationList[i][gameState.stationsInPlay[i]].funName
             } ON.`;
           }
         } else if (
-          stationList[i][gameState.stationsInPlay[i]].type === 'knob'
+          settings.stationList[i][gameState.stationsInPlay[i]].type === 'knob'
         ) {
           displayName = `Set ${
-            stationList[i][gameState.stationsInPlay[i]].funName
-          } to ${stationList[i][gameState.stationsInPlay[i]][knobDirection]}`;
+            settings.stationList[i][gameState.stationsInPlay[i]].funName
+          } to ${
+            settings.stationList[i][gameState.stationsInPlay[i]][knobDirection]
+          }`;
         }
         if (i === 0) {
           displayNameForStation1 = displayName;

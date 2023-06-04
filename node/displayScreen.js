@@ -1,6 +1,5 @@
 import esMain from 'es-main';
 import blessed from 'blessed';
-import stationList from './stationList.js';
 import createScreenBoxes from './createScreenBoxes.js';
 import wait from './include/wait.js';
 
@@ -55,7 +54,7 @@ function update({ state, data, settings }) {
           'You have one job: push the button . . . buttons . . . and turn the knobs and flip the switches.\n\n' +
           'Arm both stations to begin!',
       );
-      if (stationList[0][0].currentStatus !== 'on') {
+      if (settings.stationList[0][0].currentStatus !== 'on') {
         screenBoxes.waitingToArm1box.setContent(
           '{center}Waiting for Station 1 to Arm.{/center}',
         );
@@ -63,7 +62,7 @@ function update({ state, data, settings }) {
       } else {
         screen.remove(screenBoxes.waitingToArm1box);
       }
-      if (stationList[1][0].currentStatus !== 'on') {
+      if (settings.stationList[1][0].currentStatus !== 'on') {
         screenBoxes.waitingToArm2box.setContent(
           '{center}Waiting for Station 2 to Arm.{/center}',
         );
@@ -78,7 +77,7 @@ function update({ state, data, settings }) {
       screenBoxes.commandBox.setContent('{center}Get ready!{/center}');
       break;
     case 'gameOver':
-      if (stationList[0][0].currentStatus !== 'off') {
+      if (settings.stationList[0][0].currentStatus !== 'off') {
         screenBoxes.waitingToArm1box.setContent(
           '{center}Waiting for Station 1 to DISARM.{/center}',
         );
@@ -86,7 +85,7 @@ function update({ state, data, settings }) {
       } else {
         screen.remove(screenBoxes.waitingToArm1box);
       }
-      if (stationList[1][0].currentStatus !== 'off') {
+      if (settings.stationList[1][0].currentStatus !== 'off') {
         screenBoxes.waitingToArm2box.setContent(
           '{center}Waiting for Station 2 to DISARM.{/center}',
         );
@@ -95,8 +94,8 @@ function update({ state, data, settings }) {
         screen.remove(screenBoxes.waitingToArm2box);
       }
       if (
-        stationList[0][0].currentStatus === 'off' &&
-        stationList[1][0].currentStatus === 'off'
+        settings.stationList[0][0].currentStatus === 'off' &&
+        settings.stationList[1][0].currentStatus === 'off'
       ) {
         screen.remove(screenBoxes.commandBox);
       } else {
