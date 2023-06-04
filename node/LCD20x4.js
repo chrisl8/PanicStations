@@ -2,7 +2,7 @@ import process from 'process';
 import { SerialPort } from 'serialport';
 import esMain from 'es-main';
 import UsbDevice from './UsbDevice.js';
-import wait from './wait.js';
+import wait from './include/wait.js';
 
 let working = false; // Prevent multiple instances from running at once in the same program
 let displaySizeSet;

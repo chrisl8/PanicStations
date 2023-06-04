@@ -1,5 +1,5 @@
 import lcd from './LCD20x4.js';
-import wait from './wait.js';
+import wait from './include/wait.js';
 import formatAndSendToLCD from './formatAndSendToLCD.js';
 import gameState from './gameState.js';
 
