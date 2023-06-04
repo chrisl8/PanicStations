@@ -1,7 +1,6 @@
 import lcd from './LCD20x4.js';
 import wait from './include/wait.js';
 import formatAndSendToLCD from './formatAndSendToLCD.js';
-import gameState from './gameState.js';
 
 function centerLine(text) {
   if (text.length < 20 - 1) {
@@ -45,7 +44,7 @@ class DisplayLCD {
     }
   }
 
-  async update({ state, data, station }) {
+  async update({ state, data, station, gameState }) {
     // TODO: Remember not to spam the display! Check that the new data is NEW before updating.
     if (this.savedState !== state) {
       while (!this.portObj) {
@@ -68,7 +67,7 @@ class DisplayLCD {
             portObj: this.portObj,
             operation: 'text',
             row: 'line3',
-            input: centerLine('to begin!'),
+            input: centerLine('to join!'),
           });
           break;
         case 'notStarted':
@@ -102,7 +101,7 @@ class DisplayLCD {
           // }
           break;
         case 'player1done':
-          if (station === 1) {
+          if (station === 'one') {
             await lcd.display({ portObj: this.portObj, operation: 'clear' });
             await lcd.display({
               portObj: this.portObj,
@@ -119,7 +118,7 @@ class DisplayLCD {
           }
           break;
         case 'player2done':
-          if (station === 2) {
+          if (station === 'two') {
             await lcd.display({ portObj: this.portObj, operation: 'clear' });
             await lcd.display({
               portObj: this.portObj,
@@ -141,14 +140,14 @@ class DisplayLCD {
         case 'waitingForInput':
           break;
         case 'generatingNextCommand':
-          if (station === 1 && !gameState.player1done) {
+          if (station === 'one' && !gameState.player1done) {
             await lcd.display({ portObj: this.portObj, operation: 'clear' });
             await formatAndSendToLCD({
               portObj: this.portObj,
               text: gameState.displayNameForStation1,
             });
           }
-          if (station === 2 && !gameState.player2done) {
+          if (station === 'two' && !gameState.player2done) {
             await lcd.display({ portObj: this.portObj, operation: 'clear' });
             await formatAndSendToLCD({
               portObj: this.portObj,
