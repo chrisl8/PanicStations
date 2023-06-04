@@ -10,6 +10,7 @@
     "blessed": "^0.1.81",
     "es-main": "^1.2.0",
     "johnny-five": "^2.1.0",
+    "json5": "^2.2.3",
     "jspack": "0.0.4",
     "pm2": "^5.2.2",
     "serialport": "^11.0.0"
