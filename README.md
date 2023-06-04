@@ -62,7 +62,9 @@ bash <(wget -qO- --no-cache -o /dev/null https://raw.githubusercontent.com/chris
 
 ## Setup
 
-There are some settings that you may need to tweak in `node/settings.js`. These should be in some non-committed file, but that is a project for a future update.
+There must be a `settings.json5` file in the root of the folder for this code to work.  
+You can find example files in the `exampleSettings` folder.  
+Copy on in before attempting to run this code.
 
 ## Running the game
 

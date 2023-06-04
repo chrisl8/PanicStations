@@ -5,10 +5,11 @@ import { AsyncParser } from '@json2csv/node';
 
 import stationList from './stationList.js';
 import gameState from './gameState.js';
-import settings from './settings.js';
 import display from './display.js';
 import playSound from './playSound.js';
 import pad from './include/pad.js';
+
+let settings;
 
 const csvParser = new AsyncParser();
 
@@ -111,7 +112,7 @@ function init() {
                 (gameState.gameStarted && !gameState.gameOver) ||
                 input.subType === 'arm'
               ) {
-                playSound(soundName);
+                playSound({ sound: soundName, settings });
               } else if (input.currentStatus !== previousStatus) {
                 // Switches tend to throw a lot of "on" status all at once and repeat the sound,
                 // so the check against previousStatus fixes that.
@@ -136,7 +137,7 @@ function init() {
                 if (settings.debug) {
                   console.log(`Random Sound: ${randomSound}`);
                 }
-                playSound(randomSound);
+                playSound({ sound: randomSound, settings });
               }
             });
             johnnyFiveObjects[
@@ -158,7 +159,7 @@ function init() {
                 if (input.correct) {
                   soundName = settings.soundFilenames.success;
                 }
-                playSound(soundName);
+                playSound({ sound: soundName, settings });
               }
             });
           } else if (input.type === 'knob') {
@@ -272,15 +273,18 @@ function updateDigitalReadout() {
   }
 }
 
-async function primaryGameLoop() {
+async function primaryGameLoop(initSettings) {
   if (!gameState.initCalled) {
+    if (initSettings && !settings) {
+      settings = initSettings;
+    }
     gameState.initCalled = true;
     init();
   }
   if (gameState.boardInitiated) {
     if (gameState.atGameIntro) {
       updateDigitalReadout();
-      display.update({ state: 'intro' });
+      display.update({ settings, state: 'intro' });
       if (
         stationList[0][0].currentStatus === 'on' &&
         stationList[1][0].currentStatus === 'on'
@@ -289,13 +293,17 @@ async function primaryGameLoop() {
       }
     } else if (!gameState.gameStarted) {
       gameState.score = 0;
-      display.update({ state: 'notStarted' });
+      display.update({ settings, state: 'notStarted' });
       gameState.gameStartedTime = Date.now();
       gameState.gameStarted = true;
     } else if (gameState.gameOver) {
-      display.update({ state: 'gameOver', data: { score: gameState.score } });
+      display.update({
+        settings,
+        state: 'gameOver',
+        data: { score: gameState.score },
+      });
       if (!gameState.gameOverTasksCompleted) {
-        playSound(settings.soundFilenames.gameOver);
+        playSound({ sound: settings.soundFilenames.gameOver, settings });
         gameState.statistics.push({
           gameStartedTime: gameState.gameStartedTime,
           station1: gameState.displayNameForStation1,
@@ -341,7 +349,7 @@ async function primaryGameLoop() {
       gameState.maxTime * (1000 / settings.loopTime) - gameState.timeElapsed <
       1
     ) {
-      display.update({ state: 'maxTimeReached' });
+      display.update({ settings, state: 'maxTimeReached' });
       if (!settings.runWithoutArduino) {
         johnnyFiveObjects.digitalReadout1.print('0000');
         johnnyFiveObjects.digitalReadout2.print('0000');
@@ -385,20 +393,20 @@ async function primaryGameLoop() {
       if (player1done !== gameState.player1done) {
         gameState.player1done = player1done;
         if (player1done) {
-          playSound(settings.soundFilenames.success);
+          playSound({ sound: settings.soundFilenames.success, settings });
         } else {
           // Display command again if the "player done" goes from true to false again.
-          display.update({ state: 'generatingNextCommand' });
+          display.update({ settings, state: 'generatingNextCommand' });
         }
       }
 
       if (player2done !== gameState.player2done) {
         gameState.player2done = player2done;
         if (player2done) {
-          playSound(settings.soundFilenames.success);
+          playSound({ sound: settings.soundFilenames.success, settings });
         } else {
           // Display command again if the "player done" goes from true to false again.
-          display.update({ state: 'generatingNextCommand' });
+          display.update({ settings, state: 'generatingNextCommand' });
         }
       }
 
@@ -426,12 +434,16 @@ async function primaryGameLoop() {
           gameState.timeElapsed++;
         }
         if (player1done && !player2done) {
-          display.update({ state: 'player1done', data: gameState });
+          display.update({ settings, state: 'player1done', data: gameState });
         } else if (player2done && !player1done) {
-          display.update({ state: 'player2done', data: gameState });
+          display.update({ settings, state: 'player2done', data: gameState });
         } else {
           // This does NOTHING on the LCD.
-          display.update({ state: 'waitingForInput', data: gameState });
+          display.update({
+            settings,
+            state: 'waitingForInput',
+            data: gameState,
+          });
         }
       }
       updateDigitalReadout();
@@ -539,12 +551,13 @@ async function primaryGameLoop() {
         }
       }
       display.update({
+        settings,
         state: 'generatingNextCommand',
         data: { displayNameForStation1, displayNameForStation2 },
       });
       gameState.waitingForInput = true;
     } else {
-      display.update({ state: 'crash' });
+      display.update({ settings, state: 'crash' });
     }
   }
   setTimeout(primaryGameLoop, settings.loopTime);

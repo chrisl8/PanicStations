@@ -1,7 +1,6 @@
 import esMain from 'es-main';
 import blessed from 'blessed';
 import stationList from './stationList.js';
-import settings from './settings.js';
 import createScreenBoxes from './createScreenBoxes.js';
 import wait from './include/wait.js';
 
@@ -36,7 +35,13 @@ function initialize() {
   screen.render();
 }
 
-function update({ state, data }) {
+/**
+ *
+ * @param {String} state
+ * @param {String} data
+ * @param {Object} settings
+ */
+function update({ state, data, settings }) {
   /*
   / NOTE:
   / If the logic gets too crazy here, then keep the logic
@@ -149,7 +154,7 @@ if (esMain(import.meta)) {
   // TERM=xterm node displayScreen.js
   initialize();
   await wait(1000);
-  update({ state: 'intro' });
+  update({ state: 'intro', data: '', settings: { loopTime: 10 } });
   await wait(5000);
-  update({ data: `Press 'q' to exit.` });
+  update({ state: '', data: `Press 'q' to exit.`, settings: { loopTime: 10 } });
 }

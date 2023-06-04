@@ -1,14 +1,10 @@
 import five from 'johnny-five';
-import settings from '../settings.js';
-import wait from '../wait.js';
-import gameState from '../gameState.js';
-import playSound from '../playSound.js';
 import pad from '../include/pad.js';
 
 const board = new five.Board({
   port: 'COM6',
-  repl: settings.johnnyFiveRepl, // IF you don't want the REPL to display, because maybe you are doing something else on the terminal, turn it off this way.
-  debug: settings.johnnyFiveDebug, // Same for the "debug" messages like board Found and Connected.
+  repl: false, // IF you don't want the REPL to display, because maybe you are doing something else on the terminal, turn it off this way.
+  debug: true, // Same for the "debug" messages like board Found and Connected.
 });
 
 board.on('ready', async () => {
