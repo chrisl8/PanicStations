@@ -1,9 +1,12 @@
+/* eslint-disable no-await-in-loop */
 import display from './display.js';
 import primaryGameLoop from './primaryGameLoop.js';
 import UsbDevice from './UsbDevice.js';
 import loadSettings from './include/loadSettings.js';
+import wait from './include/wait.js';
+import initializeHardware from './gameFunctions/initializeHardware.js';
 
-let settings = await loadSettings();
+const settings = await loadSettings();
 if (!settings) {
   console.error(
     `You MUST create a settings.json5 in the parent folder of index.js.`,
@@ -12,25 +15,53 @@ if (!settings) {
   process.exit(1);
 }
 
-const stationOneLcdPort = new UsbDevice(
-  settings.stationOneLcdPort.string,
-  settings.stationOneLcdPort.location,
-);
-const stationTwoLcdPort = new UsbDevice(
-  settings.stationTwoLcdPort.string,
-  settings.stationTwoLcdPort.location,
-);
-const primaryJohnnyFiveArduinoPort = new UsbDevice(
-  settings.primaryJohnnyFiveArduinoPort.string,
-  settings.primaryJohnnyFiveArduinoPort.location,
-);
-// NOTE: The LCD screens are set by their USB location, so plugging them in differently will cause them to get lost. The LCD screens have no serial numbers, so it is the only reliable way.
-settings.stationOneLcdPort.name = await stationOneLcdPort.findDeviceName();
-settings.stationTwoLcdPort.name = await stationTwoLcdPort.findDeviceName();
-settings = await display.initialize(settings);
+// TODO: This should be a bit more dynamically generated as it is largely based on a static 2 panel game.
+const gameState = {
+  atGameIntro: true,
+  gameStarted: false,
+  gameOver: false,
+  boardInitiated: false,
+  waitingForInput: false,
+  nextInstructionForSide1: 1,
+  nextInstructionForSide2: 1,
+  totalStationCount: 2, // A typical TARDIS would have 5, or 4 if one station is used for, say a computer running Spotify.
+  stationsArmed: 2, // TODO: Make this variable, either by menu, or setting up a way to start game play without arming all stations.
+  stationsInPlay: [], // Hold station data
+  instructionsForStations: [],
+  requiredKnobPosition1: null,
+  requiredKnobPosition2: null,
+  displayNameForStation1: '',
+  displayNameForStation2: '',
+  score: 0,
+  recentInputList: [
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+  ], // Make this longer or shorter to reject a longer list of recent inputs
+  timeElapsed: 0,
+  maxTime: 10,
+  clockUpdate: 0, // Used to regulate update of the clock, so we don't spam it and slow down the game
+  player1done: false,
+  player2done: false,
+  statistics: [],
+  shutdownRequested: false,
+};
 
-// The Arduino FTDI chips DO have serial numbers on them, so they can be reliably found no matter where they are plugged in as long as the correct serial number is in the settings file.
-settings.primaryJohnnyFiveArduinoPort.name =
-  await primaryJohnnyFiveArduinoPort.findDeviceName();
+// Initialize LCD and Blessed based (screen) Displays
+await display.initialize(settings);
 
-await primaryGameLoop(settings);
+// Initialize Arduino boards with Johnny-Five
+const johnnyFiveObjects = await initializeHardware({
+  settings,
+  gameState,
+});
+
+// Wait for hardware to be initialized.
+while (!gameState.hardwareInitialized) {
+  await wait(250);
+}
+
+// Game Update loop.
+while (!gameState.shutdownRequested) {
+  await primaryGameLoop({ settings, gameState, johnnyFiveObjects });
+  await wait(settings.loopTime);
+}
