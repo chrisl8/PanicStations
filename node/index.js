@@ -1,7 +1,7 @@
 import display from './display.js';
 import primaryGameLoop from './primaryGameLoop.js';
 import UsbDevice from './UsbDevice.js';
-import loadSettings from './loadSettings.js';
+import loadSettings from './include/loadSettings.js';
 
 let settings = await loadSettings();
 if (!settings) {
