@@ -12,6 +12,85 @@ import updateDigitalReadout from './gameFunctions/updateDigitalReadout.js';
 const csvParser = new AsyncParser();
 
 /**
+ * Generate the next input to be requested by the game.
+ * @param {Object} settings
+ * @param {Object} gameState
+ */
+function generateNextInput({ settings, gameState }) {
+  // This is where we come up with the NEXT (or first) command to request
+
+  // TODO: Do this for each station independently, in case we want the players to be allowed to play "out of sync"
+
+  for (const [key, value] of Object.entries(settings.stations)) {
+    // Only armed stations participate
+    // TODO: Handle the case of user disarming a station during gameplay.
+    //       Should this just be ignored?
+    //       or have some other function?
+    //       Ether way, I don't think it belongs here in the generateNextInput function.
+    //       And test it.
+    if (value.armed) {
+      // TODO: We may only want to do this for some stations and not others, i.e. if we are allowing one player to be done before the other,
+      //       aka. playing "out of sync"
+
+      // Clear all inputs
+      // eslint-disable-next-line no-loop-func
+      value.inputs.forEach((input) => {
+        input.hasBeenPressed = false;
+        input.correct = false;
+      });
+
+      if (!value.recentInputList) {
+        value.recentInputList = Array(settings.recentInputMemory).fill(0);
+      }
+
+      // Find a random numbered input within range of input list and not in the recently used list.
+      let newInput;
+      do {
+        newInput = getRandomInt(1, value.inputs.length - 1);
+      } while (value.recentInputList.indexOf(newInput) !== -1);
+      value.recentInputList.push(newInput);
+      value.recentInputList.shift();
+
+      console.log(value.recentInputList);
+
+      let knobDirection;
+      let displayName = value.inputs[newInput].label;
+      value.inputs[newInput].correct = true;
+
+      if (value.inputs[newInput].type === 'button') {
+        displayName = value.inputs[newInput].funName;
+      } else if (value.inputs[newInput].type === 'switch') {
+        if (value.inputs[newInput].currentStatus === 'on') {
+          displayName = `Turn ${value.inputs[newInput].funName} Off.`;
+        } else {
+          displayName = `Turn ${value.inputs[newInput].funName} ON.`;
+        }
+      } else if (value.inputs[newInput].type === 'knob') {
+        knobDirection = getRandVector();
+        while (
+          knobDirection === getRange(value.inputs[newInput].currentStatus)
+        ) {
+          knobDirection = getRandVector();
+        }
+        displayName = `Set ${value.inputs[newInput].funName} to ${value.inputs[newInput][knobDirection]}`;
+      }
+
+      value.displayName = displayName;
+      value.requiredKnobPosition = knobDirection;
+      value.newInput = newInput;
+
+      console.log('newInput', key, value.newInput, value.displayName);
+      display.update({
+        gameState,
+        settings,
+        state: 'newInput',
+        data: { station: key },
+      });
+    }
+  }
+}
+
+/**
  * Primary Game Loop
  * @param {Object} settings
  * @param {Object} gameState
@@ -19,329 +98,185 @@ const csvParser = new AsyncParser();
  * @returns {Promise<void>}
  */
 async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
-  if (gameState.atGameIntro) {
-    gameState.clockUpdate = updateDigitalReadout({
-      gameState,
-      settings,
-      johnnyFiveObjects,
-    });
-    display.update({ gameState, settings, state: 'intro', data: '' });
-    // TODO: This requires all panels to be armed to start.
-    //       Change this to allow playing with only the armed panels,
-    //       when at least one is armed and a "start" button is pressed.
-    // TODO: This update must be applied to ALL locations that make use of the
-    //       stationList variable.
-    // TODO: Check to see if ANY switch is armed,
-    // TODO: If so, tell THAT station to push "x" button to start.
-    //              and other stations to arm to join.
-    if (
-      settings.stationList[0][0].currentStatus === 'on' &&
-      settings.stationList[1][0].currentStatus === 'on'
-    ) {
-      gameState.atGameIntro = false;
-    }
-  } else if (!gameState.gameStarted) {
-    gameState.score = 0;
-    display.update({ gameState, settings, state: 'notStarted' });
-    gameState.gameStartedTime = Date.now();
-    gameState.gameStarted = true;
-  } else if (gameState.gameOver) {
-    display.update({
-      gameState,
-      settings,
-      state: 'gameOver',
-      data: { score: gameState.score },
-    });
-    if (!gameState.gameOverTasksCompleted) {
-      playSound({ sound: settings.soundFilenames.gameOver, settings });
-      gameState.statistics.push({
-        gameStartedTime: gameState.gameStartedTime,
-        station1: gameState.displayNameForStation1,
-        station2: gameState.displayNameForStation2,
-        timeElapsed: gameState.timeElapsed,
-        score: gameState.score,
-        gameEndedTime: Date.now(),
+  switch (gameState.loopState) {
+    case 'intro':
+      gameState.clockUpdate = updateDigitalReadout({
+        gameState,
+        settings,
+        johnnyFiveObjects,
       });
-      let csv;
-      try {
-        csv = await csvParser.parse(gameState.statistics).promise();
-      } catch (err) {
-        console.error(err);
-      }
-      if (csv) {
-        csv = `${csv}\n`;
-        try {
-          fs.appendFileSync('statistics.csv', csv);
-        } catch (err) {
-          console.log(err);
-          /* Handle the error */
+      display.update({ gameState, settings, state: 'intro', data: '' });
+      // TODO: This requires all panels to be armed to start.
+      //       Change this to allow playing with only the armed panels,
+      //       when at least one is armed and a "start" button is pressed.
+      // TODO: This update must be applied to ALL locations that make use of the
+      //       stationList variable.
+      // TODO: Check to see if ANY switch is armed,
+      // TODO: If so, tell THAT station to push "x" button to start.
+      //              and other stations to arm to join.
+      // eslint-disable-next-line no-case-declarations
+      let allStationsArmed = true;
+      for (const [, value] of Object.entries(settings.stations)) {
+        if (!value.armed) {
+          allStationsArmed = false;
         }
       }
-      gameState.gameOverTasksCompleted = true;
-    }
-    if (
-      settings.stationList[0][0].currentStatus === 'off' &&
-      settings.stationList[1][0].currentStatus === 'off'
-    ) {
-      gameState.gameOver = false;
-      gameState.gameOverTasksCompleted = false;
-      gameState.timeElapsed = 0;
-      gameState.maxTime = settings.initialTime;
+      if (allStationsArmed) {
+        gameState.loopState = 'startNewGame';
+      }
+      break;
+    case 'startNewGame':
       gameState.score = 0;
-      gameState.waitingForInput = false;
-      gameState.player1done = false;
-      gameState.player2done = false;
-      gameState.gameStarted = false;
-      gameState.atGameIntro = true;
-      gameState.statistics.length = 0;
-    }
-  } else if (
-    gameState.maxTime * (1000 / settings.loopTime) - gameState.timeElapsed <
-    1
-  ) {
-    display.update({ gameState, settings, state: 'maxTimeReached' });
-    if (!settings.runWithoutArduino) {
-      johnnyFiveObjects.digitalReadout1.print('0000');
-      johnnyFiveObjects.digitalReadout2.print('0000');
-    }
-    gameState.gameOver = true;
-  } else if (gameState.waitingForInput) {
-    let done = false;
-    let player1done =
-      settings.stationList[0][gameState.stationsInPlay[0]].hasBeenPressed;
-    let player2done =
-      settings.stationList[1][gameState.stationsInPlay[1]].hasBeenPressed;
+      display.update({ gameState, settings, state: 'notStarted', data: '' });
+      gameState.gameStartedTime = Date.now();
+      generateNextInput({ settings, gameState });
+      gameState.loopState = 'gameInProgress';
+      break;
+    case 'gameInProgress':
+      // TODO: Allow "async" completion of inputs.
+      for (const [key, value] of Object.entries(settings.stations)) {
+        let stationDone = value.inputs[value.newInput].hasBeenPressed;
 
-    if (
-      player1done &&
-      settings.stationList[0][gameState.stationsInPlay[0]].type === 'knob'
-    ) {
-      if (
-        getRange(
-          settings.stationList[0][gameState.stationsInPlay[0]].currentStatus,
-        ) !== gameState.requiredKnobPosition1
-      ) {
-        player1done = false;
-      }
-    }
+        if (stationDone && value.inputs[value.newInput].type === 'knob') {
+          if (
+            getRange(value.inputs[value.newInput].currentStatus) !==
+            value.requiredKnobPosition
+          ) {
+            stationDone = false;
+          }
+        }
 
-    if (
-      player2done &&
-      settings.stationList[1][gameState.stationsInPlay[1]].type === 'knob'
-    ) {
-      if (
-        settings.stationList[1][gameState.stationsInPlay[1]].type === 'knob'
-      ) {
-        if (
-          getRange(
-            settings.stationList[1][gameState.stationsInPlay[1]].currentStatus,
-          ) !== gameState.requiredKnobPosition2
-        ) {
-          player2done = false;
+        if (value.done !== stationDone) {
+          value.done = stationDone;
+          if (stationDone) {
+            playSound({ sound: settings.soundFilenames.success, settings });
+          } else {
+            // Display command again if the "player done" goes from true to false again.
+            display.update({
+              gameState,
+              settings,
+              state: 'newInput',
+              data: { station: key },
+            });
+          }
         }
       }
-    }
 
-    if (player1done !== gameState.player1done) {
-      gameState.player1done = player1done;
-      if (player1done) {
-        playSound({ sound: settings.soundFilenames.success, settings });
+      // eslint-disable-next-line no-case-declarations
+      let allStationsDone = true;
+      for (const [, value] of Object.entries(settings.stations)) {
+        if (!value.done) {
+          allStationsDone = false;
+        }
+      }
+
+      if (allStationsDone) {
+        gameState.score++;
+        gameState.statistics.push({
+          gameStartedTime: gameState.gameStartedTime,
+          station1: gameState.displayNameForStation1,
+          station2: gameState.displayNameForStation2,
+          timeElapsed: gameState.timeElapsed,
+          score: gameState.score,
+          gameEndedTime: 0,
+        });
+        gameState.timeElapsed = 0;
+        gameState.maxTime = updateMaxTime(gameState);
+        generateNextInput({ settings, gameState });
       } else {
-        // Display command again if the "player done" goes from true to false again.
-        display.update({
-          gameState,
-          settings,
-          state: 'generatingNextCommand',
-        });
-      }
-    }
-
-    if (player2done !== gameState.player2done) {
-      gameState.player2done = player2done;
-      if (player2done) {
-        playSound({ sound: settings.soundFilenames.success, settings });
-      } else {
-        // Display command again if the "player done" goes from true to false again.
-        display.update({
-          gameState,
-          settings,
-          state: 'generatingNextCommand',
-        });
-      }
-    }
-
-    if (player1done && player2done) {
-      done = true;
-    }
-
-    if (done) {
-      gameState.score++;
-      gameState.statistics.push({
-        gameStartedTime: gameState.gameStartedTime,
-        station1: gameState.displayNameForStation1,
-        station2: gameState.displayNameForStation2,
-        timeElapsed: gameState.timeElapsed,
-        score: gameState.score,
-        gameEndedTime: 0,
-      });
-      gameState.waitingForInput = false;
-      gameState.timeElapsed = 0;
-      gameState.player1done = false;
-      gameState.player2done = false;
-      gameState.maxTime = updateMaxTime(gameState);
-    } else {
-      if (!settings.noTimeOut) {
-        gameState.timeElapsed++;
-      }
-      if (player1done && !player2done) {
-        display.update({
-          gameState,
-          settings,
-          state: 'player1done',
-          data: gameState,
-        });
-      } else if (player2done && !player1done) {
-        display.update({
-          gameState,
-          settings,
-          state: 'player2done',
-          data: gameState,
-        });
-      } else {
-        // This does NOTHING on the LCD.
-        display.update({
-          gameState,
-          settings,
-          state: 'waitingForInput',
-          data: gameState,
-        });
-      }
-    }
-    gameState.clockUpdate = updateDigitalReadout({
-      gameState,
-      settings,
-      johnnyFiveObjects,
-    });
-  } else if (!gameState.waitingForInput && !gameState.gameOver) {
-    // This is where we come up with the NEXT (or first) command to request
-
-    // Clear all inputs
-    for (let i = 0; i < settings.stationList.length; i++) {
-      settings.stationList[i].forEach((button) => {
-        button.hasBeenPressed = false;
-        button.correct = false;
-      });
-    }
-
-    // Initialize station count/list.
-    /*
-     * Each board or each game cycle could theoretically have a different
-     * number of Stations (sides) in play for any given game.
-     * So we check the "stationsInPlay" variable to see what this is.
-     * TODO: Add a menu item to allow this to be variable.
-     * Or maybe just a way to start the game without arming all stations,
-     * and hence get less than "totalStationCount" stations in play.
-     */
-    // TODO: UN-initialize the stations when the game is over, so it has to be done again here on each new game
-    if (gameState.instructionsForStations.length === 0) {
-      for (let i = 0; i < gameState.stationsArmed; i++) {
-        gameState.instructionsForStations[i] = 0; // initializing the array
-      }
-    }
-    if (gameState.stationsInPlay.length === 0) {
-      for (let i = 0; i < gameState.stationsArmed; i++) {
-        gameState.stationsInPlay[i] = 0; // initializing the array
-      }
-    }
-
-    do {
-      gameState.stationsInPlay[0] = getRandomInt(
-        1,
-        settings.stationList[0].length - 1,
-      );
-    } while (
-      gameState.recentInputList[0].indexOf(gameState.stationsInPlay[0]) !== -1
-    );
-    gameState.recentInputList[0].push(gameState.stationsInPlay[0]);
-    gameState.recentInputList[0].shift();
-
-    do {
-      gameState.stationsInPlay[1] = getRandomInt(
-        1,
-        settings.stationList[1].length - 1,
-      );
-    } while (
-      gameState.recentInputList[1].indexOf(gameState.stationsInPlay[1]) !== -1
-    );
-    gameState.recentInputList[1].push(gameState.stationsInPlay[1]);
-    gameState.recentInputList[1].shift();
-
-    let displayNameForStation1 =
-      settings.stationList[0][gameState.stationsInPlay[0]].label;
-    settings.stationList[0][gameState.stationsInPlay[0]].correct = true;
-    let displayNameForStation2 =
-      settings.stationList[1][gameState.stationsInPlay[1]].label;
-    settings.stationList[1][gameState.stationsInPlay[1]].correct = true;
-
-    for (let i = 0; i < gameState.stationsArmed; i++) {
-      let knobDirection = getRandVector();
-      while (
-        knobDirection ===
-        getRange(
-          settings.stationList[i][gameState.stationsInPlay[i]].currentStatus,
-        )
-      ) {
-        knobDirection = getRandVector();
-      }
-      let displayName;
-      if (
-        settings.stationList[i][gameState.stationsInPlay[i]].type === 'button'
-      ) {
-        displayName =
-          settings.stationList[i][gameState.stationsInPlay[i]].funName;
-      } else if (
-        settings.stationList[i][gameState.stationsInPlay[i]].type === 'switch'
-      ) {
+        if (!settings.noTimeOut) {
+          gameState.timeElapsed++;
+        }
+        // Update display for any "done" players.
+        for (const [key, value] of Object.entries(settings.stations)) {
+          if (value.done) {
+            display.update({
+              gameState,
+              settings,
+              state: 'stationDone',
+              data: { station: key },
+            });
+          }
+        }
         if (
-          settings.stationList[i][gameState.stationsInPlay[i]].currentStatus ===
-          'on'
+          gameState.maxTime * (1000 / settings.loopTime) -
+            gameState.timeElapsed <
+          1
         ) {
-          displayName = `Turn ${
-            settings.stationList[i][gameState.stationsInPlay[i]].funName
-          } Off.`;
+          display.update({ gameState, settings, state: 'maxTimeReached' });
+          if (!settings.runWithoutArduino) {
+            johnnyFiveObjects.digitalReadout1.print('0000');
+            johnnyFiveObjects.digitalReadout2.print('0000');
+          }
+          gameState.loopState = 'gameOver';
         } else {
-          displayName = `Turn ${
-            settings.stationList[i][gameState.stationsInPlay[i]].funName
-          } ON.`;
+          gameState.clockUpdate = updateDigitalReadout({
+            gameState,
+            settings,
+            johnnyFiveObjects,
+          });
         }
-      } else if (
-        settings.stationList[i][gameState.stationsInPlay[i]].type === 'knob'
-      ) {
-        displayName = `Set ${
-          settings.stationList[i][gameState.stationsInPlay[i]].funName
-        } to ${
-          settings.stationList[i][gameState.stationsInPlay[i]][knobDirection]
-        }`;
       }
-      if (i === 0) {
-        displayNameForStation1 = displayName;
-        gameState.displayNameForStation1 = displayName;
-        gameState.requiredKnobPosition1 = knobDirection;
-      } else {
-        displayNameForStation2 = displayName;
-        gameState.displayNameForStation2 = displayName;
-        gameState.requiredKnobPosition2 = knobDirection;
+      break;
+    case 'gameOver':
+      display.update({
+        gameState,
+        settings,
+        state: 'gameOver',
+        data: { score: gameState.score },
+      });
+      if (!gameState.gameOverTasksCompleted) {
+        playSound({ sound: settings.soundFilenames.gameOver, settings });
+        gameState.statistics.push({
+          gameStartedTime: gameState.gameStartedTime,
+          station1: gameState.displayNameForStation1,
+          station2: gameState.displayNameForStation2,
+          timeElapsed: gameState.timeElapsed,
+          score: gameState.score,
+          gameEndedTime: Date.now(),
+        });
+        let csv;
+        try {
+          csv = await csvParser.parse(gameState.statistics).promise();
+        } catch (err) {
+          console.error(err);
+        }
+        if (csv) {
+          csv = `${csv}\n`;
+          try {
+            fs.appendFileSync('statistics.csv', csv);
+          } catch (err) {
+            console.log(err);
+            /* Handle the error */
+          }
+        }
+        gameState.gameOverTasksCompleted = true;
       }
-    }
-    display.update({
-      gameState,
-      settings,
-      state: 'generatingNextCommand',
-      data: { displayNameForStation1, displayNameForStation2 },
-    });
-    gameState.waitingForInput = true;
-  } else {
-    display.update({ gameState, settings, state: 'crash' });
+      // eslint-disable-next-line no-case-declarations
+      let allStationsDisarmed = true;
+      for (const [, value] of Object.entries(settings.stations)) {
+        if (value.armed) {
+          allStationsDisarmed = false;
+        }
+      }
+      if (allStationsDisarmed) {
+        // Reset all global game state
+        gameState.gameOverTasksCompleted = false;
+        gameState.timeElapsed = 0;
+        gameState.maxTime = settings.initialTime;
+        gameState.score = 0;
+        gameState.statistics.length = 0;
+        gameState.loopState = 'intro';
+
+        // Reset all per-station state
+        for (const [, value] of Object.entries(settings.stations)) {
+          value.done = false;
+        }
+      }
+      break;
+    default:
+      display.update({ gameState, settings, state: 'crash', data: '' });
+      break;
   }
 }
 
