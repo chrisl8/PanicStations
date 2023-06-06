@@ -16,13 +16,8 @@ if (!settings) {
 
 const gameState = {
   loopState: 'intro',
-  displayNameForStation1: '', // TODO: Remove usages of this.
-  displayNameForStation2: '', // TODO: Remove usages of this.
-  score: 0,
-  timeElapsed: 0,
   maxTime: 10,
   clockUpdate: 0, // Used to regulate update of the clock, so we don't spam it and slow down the game
-  statistics: [],
   shutdownRequested: false,
 };
 
@@ -42,6 +37,14 @@ while (!gameState.hardwareInitialized) {
 
 // Game Update loop.
 while (!gameState.shutdownRequested) {
-  await primaryGameLoop({ settings, gameState, johnnyFiveObjects });
+  const gamePlayStats = await primaryGameLoop({
+    settings,
+    gameState,
+    johnnyFiveObjects,
+  });
+  if (gamePlayStats) {
+    // TODO: Write stats to database.
+    console.log(gamePlayStats);
+  }
   await wait(settings.loopTime);
 }

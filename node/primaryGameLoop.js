@@ -1,6 +1,4 @@
 /* eslint-disable no-param-reassign */
-import fs from 'fs';
-import { AsyncParser } from '@json2csv/node';
 import display from './display.js';
 import playSound from './playSound.js';
 import getRandomInt from './include/getRandomInt.js';
@@ -8,8 +6,6 @@ import getRange from './include/getRange.js';
 import getRandVector from './include/getRandVector.js';
 import updateMaxTime from './gameFunctions/updateMaxTime.js';
 import updateDigitalReadout from './gameFunctions/updateDigitalReadout.js';
-
-const csvParser = new AsyncParser();
 
 /**
  * Generate the next input to be requested by the game.
@@ -98,6 +94,7 @@ function generateNextInput({ settings, gameState }) {
  * @returns {Promise<void>}
  */
 async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
+  let gamePlayStats;
   switch (gameState.loopState) {
     case 'intro':
       gameState.clockUpdate = updateDigitalReadout({
@@ -109,10 +106,8 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
       // TODO: This requires all panels to be armed to start.
       //       Change this to allow playing with only the armed panels,
       //       when at least one is armed and a "start" button is pressed.
-      // TODO: This update must be applied to ALL locations that make use of the
-      //       stationList variable.
-      // TODO: Check to see if ANY switch is armed,
-      // TODO: If so, tell THAT station to push "x" button to start.
+      //       Check to see if ANY switch is armed,
+      //       If so, tell THAT station to push "x" button to start.
       //              and other stations to arm to join.
       // eslint-disable-next-line no-case-declarations
       let allStationsArmed = true;
@@ -126,9 +121,20 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
       }
       break;
     case 'startNewGame':
-      gameState.score = 0;
+      // Reset all global game state
+      gameState.timeElapsedForThisInput = 0;
+      gameState.maxTime = settings.initialTime;
+      gameState.gameStats = {
+        score: 0,
+        startedTime: Date.now(),
+        gamePlayStats: [],
+      };
+
+      // Reset all per-station state
+      for (const [, value] of Object.entries(settings.stations)) {
+        value.done = false;
+      }
       display.update({ gameState, settings, state: 'notStarted', data: '' });
-      gameState.gameStartedTime = Date.now();
       generateNextInput({ settings, gameState });
       gameState.loopState = 'gameInProgress';
       break;
@@ -149,9 +155,16 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
         if (value.done !== stationDone) {
           value.done = stationDone;
           if (stationDone) {
+            gameState.gameStats.gamePlayStats.push({
+              station: key,
+              input: value.inputs[value.newInput].funName,
+              timeElapsed: gameState.timeElapsedForThisInput,
+              success: 1,
+            });
             playSound({ sound: settings.soundFilenames.success, settings });
           } else {
-            // Display command again if the "player done" goes from true to false again.
+            // Display command again if the "player done" goes from true to false again,
+            // which can happen with knobs while waiting on the other player.
             display.update({
               gameState,
               settings,
@@ -171,21 +184,13 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
       }
 
       if (allStationsDone) {
-        gameState.score++;
-        gameState.statistics.push({
-          gameStartedTime: gameState.gameStartedTime,
-          station1: gameState.displayNameForStation1,
-          station2: gameState.displayNameForStation2,
-          timeElapsed: gameState.timeElapsed,
-          score: gameState.score,
-          gameEndedTime: 0,
-        });
-        gameState.timeElapsed = 0;
+        gameState.gameStats.score++;
+        gameState.timeElapsedForThisInput = 0;
         gameState.maxTime = updateMaxTime(gameState);
         generateNextInput({ settings, gameState });
       } else {
         if (!settings.noTimeOut) {
-          gameState.timeElapsed++;
+          gameState.timeElapsedForThisInput++;
         }
         // Update display for any "done" players.
         for (const [key, value] of Object.entries(settings.stations)) {
@@ -200,7 +205,7 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
         }
         if (
           gameState.maxTime * (1000 / settings.loopTime) -
-            gameState.timeElapsed <
+            gameState.timeElapsedForThisInput <
           1
         ) {
           display.update({ gameState, settings, state: 'maxTimeReached' });
@@ -223,35 +228,16 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
         gameState,
         settings,
         state: 'gameOver',
-        data: { score: gameState.score },
+        data: { score: gameState.gameStats.score },
       });
-      if (!gameState.gameOverTasksCompleted) {
-        playSound({ sound: settings.soundFilenames.gameOver, settings });
-        gameState.statistics.push({
-          gameStartedTime: gameState.gameStartedTime,
-          station1: gameState.displayNameForStation1,
-          station2: gameState.displayNameForStation2,
-          timeElapsed: gameState.timeElapsed,
-          score: gameState.score,
-          gameEndedTime: Date.now(),
-        });
-        let csv;
-        try {
-          csv = await csvParser.parse(gameState.statistics).promise();
-        } catch (err) {
-          console.error(err);
-        }
-        if (csv) {
-          csv = `${csv}\n`;
-          try {
-            fs.appendFileSync('statistics.csv', csv);
-          } catch (err) {
-            console.log(err);
-            /* Handle the error */
-          }
-        }
-        gameState.gameOverTasksCompleted = true;
-      }
+      playSound({ sound: settings.soundFilenames.gameOver, settings });
+      // TODO: Add inputs that were not recorded (failed) yet to gameState.gameStats.gamePlayStats
+      // TODO: Update other gameState.gameStats fields
+      gameState.gameStats.endTime = Date.now();
+      // TODO: Set the gamestats variable to be returned to this data so it will get written to the DB.
+      gameState.loopState = 'waitingForReset';
+      break;
+    case 'waitingForReset':
       // eslint-disable-next-line no-case-declarations
       let allStationsDisarmed = true;
       for (const [, value] of Object.entries(settings.stations)) {
@@ -260,24 +246,14 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
         }
       }
       if (allStationsDisarmed) {
-        // Reset all global game state
-        gameState.gameOverTasksCompleted = false;
-        gameState.timeElapsed = 0;
-        gameState.maxTime = settings.initialTime;
-        gameState.score = 0;
-        gameState.statistics.length = 0;
         gameState.loopState = 'intro';
-
-        // Reset all per-station state
-        for (const [, value] of Object.entries(settings.stations)) {
-          value.done = false;
-        }
       }
       break;
     default:
       display.update({ gameState, settings, state: 'crash', data: '' });
       break;
   }
+  return gamePlayStats;
 }
 
 export default primaryGameLoop;

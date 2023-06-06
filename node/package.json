@@ -6,7 +6,6 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
-    "@json2csv/node": "^6.1.2",
     "blessed": "^0.1.81",
     "es-main": "^1.2.0",
     "johnny-five": "^2.1.0",
@@ -14,7 +13,8 @@
     "jspack": "0.0.4",
     "lodash": "^4.17.21",
     "pm2": "^5.2.2",
-    "serialport": "^11.0.0"
+    "serialport": "^11.0.0",
+    "sqlite3": "^5.1.6"
   },
   "devDependencies": {
     "eslint": "^8.26.0",
