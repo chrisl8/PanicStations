@@ -75,27 +75,23 @@ async function initializeHardware({ settings, gameState }) {
         }
       });
 
-      for (let i = 0; i < settings.stationList.length; i++) {
+      for (const [key, value] of Object.entries(settings.stations)) {
         // eslint-disable-next-line no-loop-func
-        settings.stationList[i].forEach((input) => {
+        value.inputs.forEach((input) => {
           if (
             ['switch', 'button'].indexOf(input.type) !== -1 &&
             settings.hasOwnProperty('soundFilenames') &&
             settings.soundFilenames.hasOwnProperty('incorrect') &&
             settings.soundFilenames.hasOwnProperty('success')
           ) {
-            let isPullup = true;
-            if (input.subType === 'arm') {
-              isPullup = false;
-            }
             johnnyFiveObjects[
-              `${i}-${input.type}-${input.subType}-${input.id}`
+              `${key}-${input.type}-${input.subType}-${input.id}`
             ] = new five.Button({
               pin: input.pin,
-              isPullup,
+              isPullup: input.isPullup,
             });
             johnnyFiveObjects[
-              `${i}-${input.type}-${input.subType}-${input.id}`
+              `${key}-${input.type}-${input.subType}-${input.id}`
             ].on('press', () => {
               input.hasBeenPressed = true;
               const previousStatus = input.currentStatus;
@@ -107,18 +103,21 @@ async function initializeHardware({ settings, gameState }) {
                   soundName = settings.soundFilenames.bigButton;
                 }
               }
+              // TODO: Somehow fix the spamming of the sound when turning the Arming switch off.
+              // TODO: The LCD screen should say when it is waiting for OTHER stations to disarm after THIS station is disarmed.
               if (input.subType === 'arm') {
                 soundName = settings.soundFilenames.armingSwitch;
+                settings.stations[key].armed = true;
               }
               if (settings.debug) {
-                console.log(`\nStation ${i + 1}`);
+                console.log(`\nStation ${key}`);
                 console.log(input);
               }
+              console.log('sound', gameState.loopState, soundName);
               if (
-                (gameState.gameStarted && !gameState.gameOver) ||
+                gameState.loopState === 'gameInProgress' ||
                 input.subType === 'arm'
               ) {
-                // TODO: The Arm switches tend to be flaky, maybe account for this somehow?
                 playSound({ sound: soundName, settings });
               } else if (
                 input.currentStatus !== previousStatus &&
@@ -134,7 +133,7 @@ async function initializeHardware({ settings, gameState }) {
                 // TODO: Improve on this and/or make a function.
                 // It would be better if the same button played the same sound,
                 // each time.
-                // Add an "idleSound" key to each stationList object, and use that sound name,
+                // Add an "idleSound" key to each input, and use that sound name,
                 // or if it doesn't exist on an entry, then go for "random".
                 let randomSound = settings.soundFilenames.random[1];
                 if (input.type === 'button') {
@@ -153,19 +152,21 @@ async function initializeHardware({ settings, gameState }) {
               }
             });
             johnnyFiveObjects[
-              `${i}-${input.type}-${input.subType}-${input.id}`
+              `${key}-${input.type}-${input.subType}-${input.id}`
             ].on('hold', () => {
               input.currentStatus = 'on';
             });
             johnnyFiveObjects[
-              `${i}-${input.type}-${input.subType}-${input.id}`
+              `${key}-${input.type}-${input.subType}-${input.id}`
             ].on('release', () => {
               input.hasBeenPressed = true;
               input.currentStatus = 'off';
+              if (input.subType === 'arm') {
+                settings.stations[key].armed = false;
+              }
               if (
                 input.type === 'switch' &&
-                !gameState.gameOver &&
-                gameState.gameStarted
+                gameState.loopState === 'gameInProgress'
               ) {
                 let soundName = settings.soundFilenames.incorrect;
                 if (input.correct) {
@@ -176,7 +177,7 @@ async function initializeHardware({ settings, gameState }) {
             });
           } else if (input.type === 'knob') {
             johnnyFiveObjects[
-              `${i}-${input.type}-${input.subType}-${input.id}`
+              `${key}-${input.type}-${input.subType}-${input.id}`
             ] = new five.Sensor({
               pin: input.pin,
               threshold: settings.potChangeThreshold, // This will emit a 'change' if it changes by this much.
@@ -198,14 +199,14 @@ async function initializeHardware({ settings, gameState }) {
                   */
 
             johnnyFiveObjects[
-              `${i}-${input.type}-${input.subType}-${input.id}`
+              `${key}-${input.type}-${input.subType}-${input.id}`
             ].on('change', function () {
               // Do NOT make this an arrow function!
               // this.value must reference the this that called it!
               input.hasBeenPressed = true;
               input.currentStatus = this.value;
               if (settings.debug) {
-                console.log(`\nStation ${i + 1}`);
+                console.log(`\nStation ${key}`);
                 console.log(input);
               }
               // console.log(input);
@@ -213,7 +214,7 @@ async function initializeHardware({ settings, gameState }) {
           }
           if (settings.debug) {
             // This prints out all button/switch labels at the start of the program.
-            console.log(`Station ${i} input ${input.id} is ${input.label}.`);
+            console.log(`Station ${key} input ${input.id} is ${input.label}.`);
           }
         });
       }
