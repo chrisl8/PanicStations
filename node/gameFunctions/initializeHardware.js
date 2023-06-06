@@ -112,8 +112,8 @@ async function initializeHardware({ settings, gameState }) {
               if (settings.debug) {
                 console.log(`\nStation ${key}`);
                 console.log(input);
+                console.log('sound', gameState.loopState, soundName);
               }
-              console.log('sound', gameState.loopState, soundName);
               if (
                 gameState.loopState === 'gameInProgress' ||
                 input.subType === 'arm'

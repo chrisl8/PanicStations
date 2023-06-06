@@ -16,7 +16,7 @@ async function initialize(settings) {
       value.lcdPort.name = await port.findDeviceName();
       value.lcdPort.lcd = new DisplayLCD(value.lcdPort.name);
       // eslint-disable-next-line no-await-in-loop
-      await value.lcdPort.lcd.initialize();
+      await value.lcdPort.lcd.initialize({ settings });
     }
   }
 }

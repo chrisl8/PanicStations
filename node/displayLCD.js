@@ -21,9 +21,11 @@ class DisplayLCD {
     this.lcdData = [];
   }
 
-  async initialize() {
+  async initialize({ settings }) {
     if (!this.portObj) {
-      console.log('LCD init');
+      if (settings.debug) {
+        console.log('LCD init');
+      }
       this.portObj = lcd.getPortObject(this.port);
       try {
         await lcd.display({ portObj: this.portObj, operation: 'clear' });
