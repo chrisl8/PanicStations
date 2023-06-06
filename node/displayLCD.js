@@ -1,3 +1,4 @@
+import isEqual from 'lodash/isEqual.js';
 import lcd from './LCD20x4.js';
 import wait from './include/wait.js';
 import formatAndSendToLCD from './formatAndSendToLCD.js';
@@ -17,6 +18,7 @@ function centerLine(text) {
 class DisplayLCD {
   constructor(port = '/dev/ttyACM1') {
     this.port = port;
+    this.lcdData = [];
   }
 
   async initialize() {
@@ -44,131 +46,104 @@ class DisplayLCD {
     }
   }
 
-  async update({ state, data, station, gameState }) {
-    // TODO: Remember not to spam the display! Check that the new data is NEW before updating.
-    if (this.savedState !== state) {
+  async update({ state, data, gameState, stationData }) {
+    let lcdData;
+    switch (state) {
+      case 'intro':
+        lcdData = [
+          {
+            operation: 'text',
+            row: 'line2',
+            input: centerLine('Arm your station'),
+          },
+          {
+            operation: 'text',
+            row: 'line3',
+            input: centerLine('to join!'),
+          },
+        ];
+        break;
+      case 'notStarted':
+        break;
+      case 'gameOver':
+        lcdData = [
+          { operation: 'text', row: 'line1', input: centerLine('GAME OVER') },
+          {
+            operation: 'text',
+            row: 'line2',
+            input: centerLine(`YOUR SCORE: ${data.score}`),
+          },
+          {
+            operation: 'text',
+            row: 'line3',
+            input: centerLine('Please DISARM all'),
+          },
+          {
+            operation: 'text',
+            row: 'line4',
+            input: centerLine('sides to try again'),
+          },
+        ];
+        break;
+      case 'maxTimeReached':
+        lcdData = [
+          {
+            text: 'Time is up!',
+          },
+        ];
+        break;
+      case 'newInput':
+        lcdData = [{ text: stationData.displayName }];
+        break;
+      case 'stationDone':
+        lcdData = [
+          {
+            operation: 'text',
+            row: 'line2',
+            input: centerLine('SUCCESS!'),
+          },
+          {
+            operation: 'text',
+            row: 'line4',
+            input: centerLine(`CURRENT SCORE: ${gameState.score}`),
+          },
+        ];
+        break;
+      case 'crash':
+        lcdData = [
+          { text: `ERROR: Universe has crashed, please reboot it . . .` },
+        ];
+        break;
+      default:
+        lcdData = [
+          { text: `ERROR: Universe has crashed, please reboot it . . .` },
+        ];
+        break;
+    }
+    // Remember not to spam the display! Check that the new data is NEW before updating!
+    if (lcdData && !isEqual(lcdData, this.lcdData)) {
+      this.lcdData = lcdData;
       while (!this.portObj) {
         // Wait for any existing operations to finish before running this one.
         // eslint-disable-next-line no-await-in-loop
         await wait(1);
       }
-      this.savedState = state;
-      console.log(state);
-      switch (state) {
-        case 'intro':
-          await lcd.display({ portObj: this.portObj, operation: 'clear' });
+      await lcd.display({ portObj: this.portObj, operation: 'clear' });
+      if (lcdData.length === 1 && lcdData[0].hasOwnProperty('text')) {
+        await formatAndSendToLCD({
+          portObj: this.portObj,
+          text: lcdData[0].text,
+        });
+      } else {
+        for (const entry of lcdData) {
+          // eslint-disable-next-line no-await-in-loop
           await lcd.display({
             portObj: this.portObj,
-            operation: 'text',
-            row: 'line2',
-            input: centerLine('Arm your station'),
+            operation: entry.operation,
+            row: entry.row,
+            input: entry.input,
           });
-          await lcd.display({
-            portObj: this.portObj,
-            operation: 'text',
-            row: 'line3',
-            input: centerLine('to join!'),
-          });
-          break;
-        case 'notStarted':
-          break;
-        case 'gameOver':
-          await lcd.display({ portObj: this.portObj, operation: 'clear' });
-          await lcd.display({
-            portObj: this.portObj,
-            operation: 'text',
-            row: 'line1',
-            input: centerLine('GAME OVER'),
-          });
-          await lcd.display({
-            portObj: this.portObj,
-            operation: 'text',
-            row: 'line2',
-            input: centerLine(`YOUR SCORE: ${data.score}`),
-          });
-          await lcd.display({
-            portObj: this.portObj,
-            operation: 'text',
-            row: 'line3',
-            input: centerLine('Please DISARM both'),
-          });
-          await lcd.display({
-            portObj: this.portObj,
-            operation: 'text',
-            row: 'line4',
-            input: centerLine('sides to try again'),
-          });
-          // }
-          break;
-        case 'player1done':
-          if (station === 'one') {
-            await lcd.display({ portObj: this.portObj, operation: 'clear' });
-            await lcd.display({
-              portObj: this.portObj,
-              operation: 'text',
-              row: 'line2',
-              input: centerLine('SUCCESS!'),
-            });
-            await lcd.display({
-              portObj: this.portObj,
-              operation: 'text',
-              row: 'line4',
-              input: centerLine(`CURRENT SCORE: ${gameState.score}`),
-            });
-          }
-          break;
-        case 'player2done':
-          if (station === 'two') {
-            await lcd.display({ portObj: this.portObj, operation: 'clear' });
-            await lcd.display({
-              portObj: this.portObj,
-              operation: 'text',
-              row: 'line2',
-              input: centerLine('SUCCESS!'),
-            });
-            await lcd.display({
-              portObj: this.portObj,
-              operation: 'text',
-              row: 'line4',
-              input: centerLine(`CURRENT SCORE: ${gameState.score}`),
-            });
-          }
-          break;
-        case 'maxTimeReached':
-          await lcd.display({ portObj: this.portObj, operation: 'clear' });
-          break;
-        case 'waitingForInput':
-          break;
-        case 'generatingNextCommand':
-          if (station === 'one' && !gameState.player1done) {
-            await lcd.display({ portObj: this.portObj, operation: 'clear' });
-            await formatAndSendToLCD({
-              portObj: this.portObj,
-              text: gameState.displayNameForStation1,
-            });
-          }
-          if (station === 'two' && !gameState.player2done) {
-            await lcd.display({ portObj: this.portObj, operation: 'clear' });
-            await formatAndSendToLCD({
-              portObj: this.portObj,
-              text: gameState.displayNameForStation2,
-            });
-          }
-          break;
-        case 'crash':
-          await lcd.display({ portObj: this.portObj, operation: 'clear' });
-          await formatAndSendToLCD({
-            portObj: this.portObj,
-            text: `ERROR: Universe has crashed, please reboot it . . .`,
-          });
-          break;
-        default:
-          await lcd.display({ portObj: this.portObj, operation: 'clear' });
-          await formatAndSendToLCD({
-            portObj: this.portObj,
-            text: `ERROR: Universe has crashed, please reboot it . . .`,
-          });
-          break;
+        }
       }
     }
   }

@@ -30,7 +30,14 @@ async function initialize(settings) {
 function update({ gameState, state, data, settings }) {
   if (settings.useLCD) {
     for (const [key, value] of Object.entries(settings.stations)) {
-      value.lcdPort.lcd.update({ state, data, station: key, gameState });
+      if (!data || !data.hasOwnProperty('station') || data.station === key) {
+        value.lcdPort.lcd.update({
+          state,
+          data,
+          gameState,
+          stationData: value,
+        });
+      }
     }
   }
   if (settings.useScreen) {
