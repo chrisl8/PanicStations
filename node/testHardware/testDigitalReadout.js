@@ -41,6 +41,7 @@ board.on('ready', async () => {
     const output = pad(startingNumber, 4);
     digitalReadout.print(output);
     startingNumber--;
+    // eslint-disable-next-line no-await-in-loop
     await wait(50);
   }
   await wait(5000);
