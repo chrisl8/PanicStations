@@ -35,7 +35,6 @@ async function initDatabase(db) {
   await addOrUpdateTable({
     tableName: 'games',
     columns: {
-      id: 'TEXT PRIMARY KEY',
       timestamp: 'INTEGER',
       startedTime: 'INTEGER',
       endTime: 'INTEGER',
@@ -47,8 +46,7 @@ async function initDatabase(db) {
   await addOrUpdateTable({
     tableName: 'gamePlayStats',
     columns: {
-      id: 'TEXT PRIMARY KEY',
-      gameId: 'TEXT',
+      gamesRowId: 'TEXT',
       timestamp: 'INTEGER',
       station: 'TEXT',
       input: 'TEXT',

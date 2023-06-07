@@ -5,7 +5,7 @@ import getRandomInt from './include/getRandomInt.js';
 import getRange from './include/getRange.js';
 import getRandVector from './include/getRandVector.js';
 import updateMaxTime from './gameFunctions/updateMaxTime.js';
-import updateDigitalReadout from './gameFunctions/updateDigitalReadout.js';
+import updateDigitalReadouts from './gameFunctions/updateDigitalReadouts.js';
 
 /**
  * Generate the next input to be requested by the game.
@@ -47,8 +47,6 @@ function generateNextInput({ settings, gameState }) {
       value.recentInputList.push(newInput);
       value.recentInputList.shift();
 
-      console.log(value.recentInputList);
-
       let knobDirection;
       let displayName = value.inputs[newInput].label;
       value.inputs[newInput].correct = true;
@@ -75,7 +73,6 @@ function generateNextInput({ settings, gameState }) {
       value.requiredKnobPosition = knobDirection;
       value.newInput = newInput;
 
-      console.log('newInput', key, value.newInput, value.displayName);
       display.update({
         gameState,
         settings,
@@ -97,7 +94,7 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
   let gamePlayStats;
   switch (gameState.loopState) {
     case 'intro':
-      gameState.clockUpdate = updateDigitalReadout({
+      gameState.clockUpdate = updateDigitalReadouts({
         gameState,
         settings,
         johnnyFiveObjects,
@@ -215,7 +212,7 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
           }
           gameState.loopState = 'gameOver';
         } else {
-          gameState.clockUpdate = updateDigitalReadout({
+          gameState.clockUpdate = updateDigitalReadouts({
             gameState,
             settings,
             johnnyFiveObjects,
@@ -232,10 +229,22 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
       });
       playSound({ sound: settings.soundFilenames.gameOver, settings });
       // TODO: Add inputs that were not recorded (failed) yet to gameState.gameStats.gamePlayStats
+      for (const [key, value] of Object.entries(settings.stations)) {
+        if (!value.done) {
+          // If it was done, it would be recorded already
+          gameState.gameStats.gamePlayStats.push({
+            station: key,
+            input: value.inputs[value.newInput].funName,
+            timeElapsed: gameState.timeElapsedForThisInput,
+            success: 0,
+          });
+        }
+      }
       // TODO: Update other gameState.gameStats fields
       gameState.gameStats.endTime = Date.now();
       // TODO: Set the gamestats variable to be returned to this data so it will get written to the DB.
       gameState.loopState = 'waitingForReset';
+      gamePlayStats = gameState.gameStats;
       break;
     case 'waitingForReset':
       // eslint-disable-next-line no-case-declarations

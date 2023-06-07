@@ -4,6 +4,7 @@ import primaryGameLoop from './primaryGameLoop.js';
 import loadSettings from './include/loadSettings.js';
 import wait from './include/wait.js';
 import initializeHardware from './gameFunctions/initializeHardware.js';
+import storeGamePlayStats from './utilities/storeGamePlayStats.js';
 
 const settings = await loadSettings();
 if (!settings) {
@@ -43,8 +44,7 @@ while (!gameState.shutdownRequested) {
     johnnyFiveObjects,
   });
   if (gamePlayStats) {
-    // TODO: Write stats to database.
-    console.log(gamePlayStats);
+    await storeGamePlayStats({ settings, gamePlayStats });
   }
   await wait(settings.loopTime);
 }

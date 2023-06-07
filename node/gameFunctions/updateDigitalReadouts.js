@@ -1,6 +1,6 @@
 import pad from '../include/pad.js';
 
-function updateDigitalReadout({ gameState, settings, johnnyFiveObjects }) {
+function updateDigitalReadouts({ gameState, settings, johnnyFiveObjects }) {
   let clockUpdate = gameState.clockUpdate;
   if (gameState.clockUpdate > 5 && !settings.runWithoutArduino) {
     const output = pad(
@@ -16,4 +16,4 @@ function updateDigitalReadout({ gameState, settings, johnnyFiveObjects }) {
   return clockUpdate;
 }
 
-export default updateDigitalReadout;
+export default updateDigitalReadouts;
