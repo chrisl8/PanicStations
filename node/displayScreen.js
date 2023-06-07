@@ -102,7 +102,7 @@ function update({ state, data, settings }) {
         screenBoxes.commandBox.setContent(`GAME OVER!\n
             \n\nYOUR SCORE: ${data.score}
             \n\nYou had ONE BUTTON (or switch . . . or knob . . .) to push, but you failed . . .
-            \n\nPlease DISARM both Stations to try again.
+            \n\nPlease DISARM all Stations to try again.
             `);
       }
       break;
@@ -110,8 +110,6 @@ function update({ state, data, settings }) {
       screen.remove(screenBoxes.leftBottomBox);
       screen.remove(screenBoxes.rightBottomBox);
       break;
-    case 'player1done':
-    case 'player2done':
     case 'waitingForInput':
       screen.append(screenBoxes.leftBottomBox);
       screenBoxes.leftBottomBox.setContent(
@@ -122,7 +120,8 @@ function update({ state, data, settings }) {
       screen.append(screenBoxes.rightBottomBox);
       screenBoxes.rightBottomBox.setContent(`SCORE: ${data.score}`);
       break;
-    case 'generatingNextCommand':
+    case 'newInput':
+      // TODO: This will come in on a per-station basis, so display in the correct station.
       screenBoxes.commandBox.setContent(`\n${data.displayNameForStation1}\n
             \n
             and
