@@ -4,7 +4,8 @@ function updateDigitalReadouts({ gameState, settings, johnnyFiveObjects }) {
   let clockUpdate = gameState.clockUpdate;
   if (gameState.clockUpdate > 5 && !settings.runWithoutArduino) {
     const output = pad(
-      gameState.maxTime * (1000 / settings.loopTime) - gameState.timeElapsed,
+      gameState.maxTime * (1000 / settings.loopTime) -
+        gameState.timeElapsedForThisInput || 0,
       4,
     );
     johnnyFiveObjects.digitalReadout1.print(output);
