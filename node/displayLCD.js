@@ -107,7 +107,7 @@ class DisplayLCD {
           {
             operation: 'text',
             row: 'line4',
-            input: centerLine(`CURRENT SCORE: ${gameState.score}`),
+            input: centerLine(`CURRENT SCORE: ${gameState.gameStats.score}`),
           },
         ];
         break;
