@@ -21,14 +21,23 @@ sudo apt update
 sudo apt upgrade -y
 
 PACKAGE_TO_INSTALL_LIST=()
-PACKAGE_TO_INSTALL_LIST+=(gh)
-#gh - Used to clone source code to pi
 PACKAGE_TO_INSTALL_LIST+=(git)
 #git - Used to update source code on pi
 PACKAGE_TO_INSTALL_LIST+=(build-essential)
 #build-essential - Required to build the node serialport binaries
+PACKAGE_TO_INSTALL_LIST+=(curl)
+#curl - Required by gh install and some other tools
 
 sudo apt install -y "${PACKAGE_TO_INSTALL_LIST[@]}"
+
+if ! (command -v gh >/dev/null); then
+  # https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+  sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
+  sudo apt update
+  sudo apt install gh -y
+fi
 
 printf "\n${YELLOW}[Cloning or Updating git repositories]${NC}\n"
 cd
@@ -91,11 +100,11 @@ if ! (crontab -l >/dev/null 2>&1) || ! (crontab -l | grep startService >/dev/nul
   ) | crontab -
 fi
 
-  printf "\n${YELLOW}-----------------------------------${NC}\n"
-  printf "${YELLOW}ALL DONE! EDIT FILES, REBOOT, AND START TESTING!${NC}\n\n"
-  printf "${GREEN}Remember to ADD a settings.json5 config files to ${HOME}/${GIT_REPO_AND_FOLDER}${NC}\n\n"
-  printf "${LIGHTCYAN}You can find Example config files in the examples folder.${NC}\n"
-  printf "\n"
-  printf "${GREEN}Look at README.md for more information.${NC}\n"
+printf "\n${YELLOW}-----------------------------------${NC}\n"
+printf "${YELLOW}ALL DONE! EDIT FILES, REBOOT, AND START TESTING!${NC}\n\n"
+printf "${GREEN}Remember to ADD a settings.json5 config files to ${HOME}/${GIT_REPO_AND_FOLDER}${NC}\n\n"
+printf "${LIGHTCYAN}You can find Example config files in the examples folder.${NC}\n"
+printf "\n"
+printf "${GREEN}Look at README.md for more information.${NC}\n"
 
-  printf "\n${YELLOW}------------------------------------------------------------${NC}\n"
+printf "\n${YELLOW}------------------------------------------------------------${NC}\n"
