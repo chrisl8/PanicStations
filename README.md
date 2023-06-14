@@ -27,10 +27,12 @@ You will need to connect a monitor to your Pi and follow the on screen setup ins
 Note that Raspbian has the SSH Server disabled by default. Follow their instructions to [enable the SSH server on your Raspberry Pi](https://www.raspberrypi.com/documentation/computers/remote-access.html#enabling-the-server) if you want to do this remotely rather than from the pi itself.
 
 Copied here for convenience:
- - Launch Raspberry Pi Configuration from the Preferences menu
- - Navigate to the Interfaces tab
- - Select Enabled next to SSH
- - Click OK
+ - Run `sudo raspi-config`
+ - Select `Interfacing Options`
+ - Navigate to and select `SSH`
+ - Choose `Yes`
+ - Select `OK`
+ - Choose `Finish`
 
 ### Pi Serial Port Enable
 You **must** enable the serial port on the Pi before running the install script below.
@@ -38,16 +40,20 @@ You **must** enable the serial port on the Pi before running the install script 
 Follow the [instructions to enable Serial port on Pi](https://serialport.io/docs/guide-installation#raspberry-pi-linux).
 
 Copied here for convenience:  
-```
-To enable the serial port on Raspbian, you launch raspi-config, then select Interfacing Options, then Serial. You will then be asked two questions:
+Copied here for convenience:
+- Run `sudo raspi-config`
+- Select `Interfacing Options`
+- Navigate to and select `Serial Port`
+- Choose `No` for "Would you like a login shell to be accessible over serial?"
+- Choose `Yes` for "Would you like the serial port hardware to be enabled?"
+- Select `OK`
+- Choose `Finish`
+- Choose `Yes` for "Would you like to reboot now?"
 
-Would you like a login shell to be accessible over serial?
-Would you like the serial port hardware to be enabled?
+### WiFi
 
-You must answer No to question 1 and Yes to question 2. If the login shell is left active, you will experience hangs and or disconnects.
-```
-
-A reboot will be required after this.
+If you want to set up your Pi to work over WiFi, use the same `sudo raspi-config` menu.  
+It is under `System Options`  
 
 ## Install
 There is a script to install everything. Run:
@@ -56,9 +62,9 @@ There is a script to install everything. Run:
 bash <(wget -qO- --no-cache -o /dev/null https://raw.githubusercontent.com/chrisl8/PanicStations/main/setup.sh)
 ```
 
-**A reboot will be required after the first install.**
+**A reboot will be required after the first install, but you probably want to put in a settings.json5 file first. See below.**
 
-**NOTICE: If your LCD Displays are brand new, some settings will be saved to them on first run that will not take affect until they are power cycled once. So you may need to power them down by unplugging them from USB or powering off the Pi at least once after the first run before they will display correclty.**
+**NOTICE: If your LCD Displays are brand new, some settings will be saved to them on first run that will not take affect until they are power cycled once. So you may need to power them down by unplugging them from USB or powering off the Pi at least once after the first run before they will display correctly.**
 
 ## Setup
 
@@ -68,7 +74,7 @@ Copy on in before attempting to run this code.
 
 ## Running the game
 
-If you ran the setup script, it should all be working after your first reboot.  
+If you ran the setup script, and provided a `settings.json5` file, then it should all be working after your first reboot.  
 There are shell scripts to stop, start, restart, and view the log.
 
 ## Hardware Setup

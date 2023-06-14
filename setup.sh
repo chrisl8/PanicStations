@@ -21,8 +21,10 @@ sudo apt update
 sudo apt upgrade -y
 
 PACKAGE_TO_INSTALL_LIST=()
+PACKAGE_TO_INSTALL_LIST+=(gh)
+#gh - Used to clone source code to pi
 PACKAGE_TO_INSTALL_LIST+=(git)
-#git - Used to copy source code to pi
+#git - Used to update source code on pi
 PACKAGE_TO_INSTALL_LIST+=(build-essential)
 #build-essential - Required to build the node serialport binaries
 
@@ -31,7 +33,7 @@ cd
 
 printf "${BLUE}${GIT_REPO_AND_FOLDER} repository${NC}\n"
 if ! [[ -d ${HOME}/${GIT_REPO_AND_FOLDER} ]]; then
-  git clone https://github.com/chrisl8/${GIT_REPO_AND_FOLDER}.git
+  gh repo clone chrisl8/${GIT_REPO_AND_FOLDER}
 else
   cd "${HOME}"/${GIT_REPO_AND_FOLDER}
   git pull
@@ -86,3 +88,12 @@ if ! (crontab -l >/dev/null 2>&1) || ! (crontab -l | grep startService >/dev/nul
     echo "@reboot ${HOME}/${GIT_REPO_AND_FOLDER}/startService.sh > ${HOME}/crontab.log"
   ) | crontab -
 fi
+
+  printf "\n${YELLOW}-----------------------------------${NC}\n"
+  printf "${YELLOW}ALL DONE! EDIT FILES, REBOOT, AND START TESTING!${NC}\n\n"
+  printf "${GREEN}Remember to ADD a settings.json5 config files to ${HOME}/${GIT_REPO_AND_FOLDER}${NC}\n\n"
+  printf "${LIGHTCYAN}You can find Example config files in the examples folder.${NC}\n"
+  printf "\n"
+  printf "${GREEN}Look at README.md for more information.${NC}\n"
+
+  printf "\n${YELLOW}------------------------------------------------------------${NC}\n"

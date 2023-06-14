@@ -40,7 +40,12 @@ class UsbDevice {
             } else {
               possiblePort = null;
             }
-          } else if (
+          }
+          // Use this for finding the strings to add to the config file
+          // if (possiblePort === 'COM6') {
+          //   console.log(outputAsArray[i]);
+          // }
+          if (
             possiblePort &&
             outputAsArray[i].includes(this.stringLocation) &&
             outputAsArray[i + 1].trim() === this.uniqueDeviceString
@@ -75,7 +80,7 @@ class UsbDevice {
     if (deviceName) {
       return deviceName;
     }
-    throw new Error('Not found.');
+    throw new Error('USB Device Not found.');
   }
 
   getLinuxUsbDeviceList() {

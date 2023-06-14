@@ -8,8 +8,11 @@ function updateDigitalReadouts({ gameState, settings, johnnyFiveObjects }) {
         gameState.timeElapsedForThisInput || 0,
       4,
     );
+    // TODO: This must be set to a per station item.
+    /*
     johnnyFiveObjects.digitalReadout1.print(output);
-    johnnyFiveObjects.digitalReadout2.print(output);
+    johnnyFiveObjects.digitalReadout2.print(output);\
+     */
     clockUpdate = 0;
   } else {
     clockUpdate++;

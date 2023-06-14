@@ -11,7 +11,7 @@ async function initializeHardware({ settings, gameState }) {
     settings.primaryJohnnyFiveArduinoPort.location,
   );
 
-  // The Arduino FTDI chips DO have serial numbers on them, so they can be reliably found no matter where they are plugged in as long as the correct serial number is in the settings file.
+  // The Arduino FTDI chips DO have serial numbers on them, so they can be reliably found no matter where they are plugged in as long as the correct serial number is in the getsettings file.
   settings.primaryJohnnyFiveArduinoPort.name =
     await primaryJohnnyFiveArduinoPort.findDeviceName();
 
@@ -34,46 +34,54 @@ async function initializeHardware({ settings, gameState }) {
 
       // TODO: Do we need to update/replace the firmata on either board?
 
+      // TODO: This must be set up on a per station basis.
+      /*
       johnnyFiveObjects.digitalReadout2 = new five.Led.Digits({
         controller: 'HT16K33',
       });
       johnnyFiveObjects.digitalReadout1 = new five.Led.Digits({
         controller: 'HT16K33',
       });
+      *
+       */
 
       // Volume Knob
-      johnnyFiveObjects.volumeKnob = new five.Sensor({
-        pin: settings.volume.knob.pin,
-        threshold: settings.volume.knob.potChangeThreshold, // This will emit a 'change' if it changes by this much.
-        // freq: 250 // This will emit data every x milliseconds, even if no change has occurred.
-      });
-      johnnyFiveObjects.volumeKnob.on('change', function () {
-        // Do NOT make this an arrow function!
-        // this.value must reference the this that called it!
-        // Remember knob works in reverse.
-        if (this.value < settings.volume.knob.maximum) {
-          settings.volume.setting = settings.volume.maximum;
-        } else if (this.value > settings.volume.knob.minimum) {
-          settings.volume.setting = settings.volume.zero;
-        } else {
-          const OldRange =
-            settings.volume.knob.maximum - settings.volume.knob.minimum;
-          if (OldRange === 0) settings.volume.setting = settings.volume.minimum;
-          else {
-            const NewRange = settings.volume.maximum - settings.volume.minimum;
-            settings.volume.setting = Math.round(
-              ((this.value - settings.volume.knob.minimum) * NewRange) /
-                OldRange +
-                settings.volume.minimum,
+      if (settings.hasOwnProperty('volume')) {
+        johnnyFiveObjects.volumeKnob = new five.Sensor({
+          pin: settings.volume.knob.pin,
+          threshold: settings.volume.knob.potChangeThreshold, // This will emit a 'change' if it changes by this much.
+          // freq: 250 // This will emit data every x milliseconds, even if no change has occurred.
+        });
+        johnnyFiveObjects.volumeKnob.on('change', function () {
+          // Do NOT make this an arrow function!
+          // this.value must reference the this that called it!
+          // Remember knob works in reverse.
+          if (this.value < settings.volume.knob.maximum) {
+            settings.volume.setting = settings.volume.maximum;
+          } else if (this.value > settings.volume.knob.minimum) {
+            settings.volume.setting = settings.volume.zero;
+          } else {
+            const OldRange =
+              settings.volume.knob.maximum - settings.volume.knob.minimum;
+            if (OldRange === 0)
+              settings.volume.setting = settings.volume.minimum;
+            else {
+              const NewRange =
+                settings.volume.maximum - settings.volume.minimum;
+              settings.volume.setting = Math.round(
+                ((this.value - settings.volume.knob.minimum) * NewRange) /
+                  OldRange +
+                  settings.volume.minimum,
+              );
+            }
+          }
+          if (settings.debug) {
+            console.log(
+              `\nVolume Knob (${settings.volume.knob.pin}): ${this.value} - Volume: ${settings.volume.setting}`,
             );
           }
-        }
-        if (settings.debug) {
-          console.log(
-            `\nVolume Knob (${settings.volume.knob.pin}): ${this.value} - Volume: ${settings.volume.setting}`,
-          );
-        }
-      });
+        });
+      }
 
       for (const [key, value] of Object.entries(settings.stations)) {
         // eslint-disable-next-line no-loop-func
@@ -140,9 +148,9 @@ async function initializeHardware({ settings, gameState }) {
                   randomSound = settings.soundFilenames.random[0];
                 }
                 // const randomSound =
-                //   settings.soundFilenames.random[
+                //   getsettings.soundFilenames.random[
                 //     Math.floor(
-                //       Math.random() * settings.soundFilenames.random.length,
+                //       Math.random() * getsettings.soundFilenames.random.length,
                 //     )
                 //   ];
                 if (settings.debug) {

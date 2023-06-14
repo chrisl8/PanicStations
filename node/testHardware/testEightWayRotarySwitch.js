@@ -1,10 +1,11 @@
 import five from 'johnny-five';
+import settings from '../utilities/getsettings.js';
 import pad from '../include/pad.js';
 
 const board = new five.Board({
   port: 'COM6',
-  repl: false, // IF you don't want the REPL to display, because maybe you are doing something else on the terminal, turn it off this way.
-  debug: true, // Same for the "debug" messages like board Found and Connected.
+  repl: settings.johnnyFiveRepl, // IF you don't want the REPL to display, because maybe you are doing something else on the terminal, turn it off this way.
+  debug: settings.johnnyFiveDebug, // Same for the "debug" messages like board Found and Connected.
 });
 
 board.on('ready', async () => {
@@ -18,7 +19,7 @@ board.on('ready', async () => {
   const led = new five.Led(13);
   led.blink(500);
 
-  const pinsToMonitor = [6, 7, 8];
+  const pinsToMonitor = [6, 7, 8, 9, 10, 11, 12, 13];
   const isPullup = true;
 
   console.log('Setting up pins:');

@@ -36,14 +36,33 @@ function generateNextInput({ settings, gameState }) {
       });
 
       if (!value.recentInputList) {
-        value.recentInputList = Array(settings.recentInputMemory).fill(0);
+        // The recentInputList prevents repeating of recent inputs when selecting new inputs randomly,
+        // because true random often has long chains of repeats, which is not percieved as
+        // random to humans, and is not fun either.
+
+        // Start with an empty array, which means it will not be used at all.
+        value.recentInputList = [];
+
+        // Calculate length of recentInputList based on number of inputs on this station.
+        // The Arming switch won't count, so start with length - 1;
+        const inputCount = value.inputs.length - 1;
+
+        // If there is 1 input, this is obviously pointless.
+        // If there are only 2, this would just result in a clear alternation, and some repeats would be more random.
+        // So only do this with 3 or more inputs.
+        if (inputCount > 2) {
+          // We will remember 20% of the inputs to prevent repeats.
+          // And round it UP to the next integer
+          const recentInputMemoryLength = Math.ceil(inputCount * 0.2);
+          value.recentInputList = Array(recentInputMemoryLength).fill(0);
+        }
       }
 
       // Find a random numbered input within range of input list and not in the recently used list.
       let newInput;
       do {
         newInput = getRandomInt(1, value.inputs.length - 1);
-      } while (value.recentInputList.indexOf(newInput) !== -1);
+      } while (value.recentInputList.length > 0 && value.recentInputList.indexOf(newInput) !== -1);
       value.recentInputList.push(newInput);
       value.recentInputList.shift();
 
@@ -52,12 +71,12 @@ function generateNextInput({ settings, gameState }) {
       value.inputs[newInput].correct = true;
 
       if (value.inputs[newInput].type === 'button') {
-        displayName = value.inputs[newInput].funName;
+        displayName = value.inputs[newInput].label;
       } else if (value.inputs[newInput].type === 'switch') {
         if (value.inputs[newInput].currentStatus === 'on') {
-          displayName = `Turn ${value.inputs[newInput].funName} Off.`;
+          displayName = `Turn ${value.inputs[newInput].label} Off.`;
         } else {
-          displayName = `Turn ${value.inputs[newInput].funName} ON.`;
+          displayName = `Turn ${value.inputs[newInput].label} ON.`;
         }
       } else if (value.inputs[newInput].type === 'knob') {
         knobDirection = getRandVector();
@@ -66,7 +85,7 @@ function generateNextInput({ settings, gameState }) {
         ) {
           knobDirection = getRandVector();
         }
-        displayName = `Set ${value.inputs[newInput].funName} to ${value.inputs[newInput][knobDirection]}`;
+        displayName = `Set ${value.inputs[newInput].label} to ${value.inputs[newInput][knobDirection]}`;
       }
 
       value.displayName = displayName;
@@ -154,7 +173,7 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
           if (stationDone) {
             gameState.gameStats.gamePlayStats.push({
               station: key,
-              input: value.inputs[value.newInput].funName,
+              input: value.inputs[value.newInput].label,
               timeElapsed: gameState.timeElapsedForThisInput,
               success: 1,
             });
@@ -206,10 +225,13 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
           1
         ) {
           display.update({ gameState, settings, state: 'maxTimeReached' });
+          // TODO: This must be set up based on a per station setup.
+          /*
           if (!settings.runWithoutArduino) {
             johnnyFiveObjects.digitalReadout1.print('0000');
             johnnyFiveObjects.digitalReadout2.print('0000');
           }
+           */
           gameState.loopState = 'gameOver';
         } else {
           gameState.clockUpdate = updateDigitalReadouts({
@@ -221,6 +243,9 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
       }
       break;
     case 'gameOver':
+      if (settings.debug) {
+        console.log('GAME OVER!');
+      }
       display.update({
         gameState,
         settings,
@@ -234,7 +259,7 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
           // If it was done, it would be recorded already
           gameState.gameStats.gamePlayStats.push({
             station: key,
-            input: value.inputs[value.newInput].funName,
+            input: value.inputs[value.newInput].label,
             timeElapsed: gameState.timeElapsedForThisInput,
             success: 0,
           });

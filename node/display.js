@@ -5,16 +5,22 @@ import UsbDevice from './UsbDevice.js';
 
 async function initialize(settings) {
   if (settings.useScreen) {
-    screen.initialize();
+    screen.initialize({ settings });
   }
   if (settings.useLCD) {
     for (const [, value] of Object.entries(settings.stations)) {
       const port = new UsbDevice(value.lcdPort.string, value.lcdPort.location);
-
       // NOTE: The LCD screens are set by their USB location, so plugging them in differently will cause them to get lost. The LCD screens have no serial numbers, so it is the only reliable way.
-      // eslint-disable-next-line no-await-in-loop
-      value.lcdPort.name = await port.findDeviceName();
-      value.lcdPort.lcd = new DisplayLCD(value.lcdPort.name);
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        value.lcdPort.name = await port.findDeviceName();
+        value.lcdPort.lcd = new DisplayLCD(value.lcdPort.name);
+      } catch (e) {
+        console.error(
+          `useLCD is turned on in the settings.json5 file, but an LCD screen was not found on any visible USB device.\n${e}`,
+        );
+        process.exit(1);
+      }
       // eslint-disable-next-line no-await-in-loop
       await value.lcdPort.lcd.initialize({ settings });
     }
@@ -41,7 +47,7 @@ function update({ gameState, state, data, settings }) {
     }
   }
   if (settings.useScreen) {
-    screen.update({ state, data });
+    screen.update({ state, data, settings });
   }
 }
 
