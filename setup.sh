@@ -28,6 +28,8 @@ PACKAGE_TO_INSTALL_LIST+=(git)
 PACKAGE_TO_INSTALL_LIST+=(build-essential)
 #build-essential - Required to build the node serialport binaries
 
+sudo apt install -y "${PACKAGE_TO_INSTALL_LIST[@]}"
+
 printf "\n${YELLOW}[Cloning or Updating git repositories]${NC}\n"
 cd
 
