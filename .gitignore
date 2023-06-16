@@ -66,7 +66,6 @@ typings/
 # VSCode IDE Project Settings
 .vscode/
 
-node/statistics.csv
-node/sounds/copyrighted/
-/settings.json5
-/gamePlayStats.sqlite
+copyrighted/
+settings.json5
+gamePlayStats.sqlite

@@ -14,5 +14,5 @@ done
 SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 # echo "${SCRIPT_DIR}" # For debugging
 
-cd "${SCRIPT_DIR}"/node/ || exit 1
+cd "${SCRIPT_DIR}"/client/ || exit 1
 pm2 log

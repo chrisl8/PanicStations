@@ -87,7 +87,7 @@ npm i -g npm
 printf "\n${BRIGHT_MAGENTA}Installing PM2${NC}\n"
 npm i -g pm2
 
-cd "${HOME}/${GIT_REPO_AND_FOLDER}/node"
+cd "${HOME}/${GIT_REPO_AND_FOLDER}"
 printf "\n${YELLOW}[Grabbing node dependencies for Node.js scripts]${NC}\n"
 printf "${BLUE}You may get some errors here, that is normal. As long as things work, it is OK.$NC\n"
 npm ci

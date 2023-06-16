@@ -14,6 +14,6 @@ done
 SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 # echo "${SCRIPT_DIR}" # For debugging
 
-cd "${SCRIPT_DIR}"/node/ || exit 1
+cd "${SCRIPT_DIR}"/client/ || exit 1
 pm2 flush
-pm2 start "${SCRIPT_DIR}"/node/pm2Config.json
+pm2 start "${SCRIPT_DIR}"/client/pm2Config.json
