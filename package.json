@@ -13,12 +13,11 @@
     "json5": "^2.2.3",
     "jspack": "0.0.4",
     "lodash": "^4.17.21",
-    "pm2": "^5.2.2",
+    "prettier": "^2.1.1",
     "serialport": "^11.0.0",
     "socket.io": "^4.6.2",
     "socket.io-client": "^4.6.2",
-    "sqlite3": "^5.1.6",
-    "prettier": "^2.1.1"
+    "sqlite3": "^5.1.6"
   },
   "devDependencies": {
     "eslint": "^8.26.0",

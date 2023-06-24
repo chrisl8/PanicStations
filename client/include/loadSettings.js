@@ -46,18 +46,24 @@ async function loadSettings() {
     process.exit(1);
   }
 
+  let settingsUpdated;
+
   // Validate and update settings with missing fields if any
   if (!settings.hasOwnProperty('uuid')) {
+    settingsUpdated = true;
     settings.uuid = crypto.randomUUID();
   }
 
   for (const [, value] of Object.entries(settings.stations)) {
     if (!value.hasOwnProperty('uuid')) {
+      settingsUpdated = true;
       value.uuid = crypto.randomUUID();
     }
   }
 
-  await writeObject(configFile, settings);
+  if (settingsUpdated) {
+    await writeObject(configFile, settings);
+  }
 
   return settings;
 }
