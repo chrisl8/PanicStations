@@ -86,6 +86,8 @@ npm i -g npm
 
 printf "\n${BRIGHT_MAGENTA}Installing PM2${NC}\n"
 npm i -g pm2
+pm2 install pm2-logrotate # Otherwise logs can grow to fill disk space
+pm2 set pm2-logrotate:retain 1
 
 cd "${HOME}/${GIT_REPO_AND_FOLDER}"
 printf "\n${YELLOW}[Grabbing node dependencies for Node.js scripts]${NC}\n"

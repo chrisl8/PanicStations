@@ -5,6 +5,7 @@ import loadSettings from './include/loadSettings.js';
 import wait from './include/wait.js';
 import initializeHardware from './gameFunctions/initializeHardware.js';
 import storeGamePlayStats from './utilities/storeGamePlayStats.js';
+import ServerConnection from './utilities/serverConnection.js';
 
 const settings = await loadSettings();
 if (!settings) {
@@ -36,6 +37,13 @@ while (!gameState.hardwareInitialized) {
   await wait(250);
 }
 
+// Connect to the server it it exists
+let server;
+if (settings.server) {
+  server = new ServerConnection({ settings, messageHandler: console.log });
+  server.start({ settings });
+}
+
 // Game Update loop.
 while (!gameState.shutdownRequested) {
   const gamePlayStats = await primaryGameLoop({
@@ -43,6 +51,9 @@ while (!gameState.shutdownRequested) {
     gameState,
     johnnyFiveObjects,
   });
+  if (server) {
+    server.sendAllStationData({ settings });
+  }
   if (gamePlayStats) {
     await storeGamePlayStats({ settings, gamePlayStats });
   }

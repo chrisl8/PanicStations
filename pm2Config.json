@@ -1,0 +1,20 @@
+{
+  "apps": [
+    {
+      "name": "Panic Stations",
+      "script": "client/index.js",
+      "restart_delay": 1000,
+      "watch": "client",
+      "merge_logs": true,
+      "exec_interpreter": "node"
+    },
+    {
+      "name": "Panic Server",
+      "script": "server/index.js",
+      "restart_delay": 1000,
+      "watch": "server",
+      "merge_logs": true,
+      "exec_interpreter": "node"
+    }
+  ]
+}
