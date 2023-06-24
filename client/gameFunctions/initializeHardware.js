@@ -118,9 +118,8 @@ async function initializeHardware({ settings, gameState }) {
                 settings.stations[key].armed = true;
               }
               if (settings.debug) {
-                console.log(`\nStation ${key}`);
-                console.log(input);
-                console.log('sound', gameState.loopState, soundName);
+                console.log(`Play Sound: ${soundName}`);
+                console.log(`[${key}] ${input.label} ON`);
               }
               if (
                 gameState.loopState === 'gameInProgress' ||
@@ -169,6 +168,9 @@ async function initializeHardware({ settings, gameState }) {
             ].on('release', () => {
               input.hasBeenPressed = true;
               input.currentStatus = 'off';
+              if (settings.debug) {
+                console.log(`[${key}] ${input.label} OFF`);
+              }
               if (input.subType === 'arm') {
                 settings.stations[key].armed = false;
               }
