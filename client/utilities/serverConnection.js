@@ -47,29 +47,51 @@ class ServerConnection {
     });
   }
 
+  /**
+   * Send individual Station Data to Server
+   * @param {Object} stationData
+   */
   sendIndividualStationData({ stationData }) {
+    // Make a serializable clone of only the specific data we need
+    let data = {
+      inputs: stationData.inputs,
+      uuid: stationData.uuid,
+      armed: stationData.armed,
+      done: stationData.done,
+      displayName: stationData.displayName,
+      newInput: stationData.newInput,
+    };
+    data = JSON.parse(JSON.stringify(data));
     if (
       this.socket.connected &&
-      (!this.sentData.has(stationData.uuid) ||
-        !isEqual(this.sentData.get(stationData.uuid), stationData))
+      (!this.sentData.has(data.uuid) ||
+        !isEqual(this.sentData.get(data.uuid), data))
     ) {
-      this.socket.emit('stationData', stationData);
-      this.sentData.set(stationData.uuid, stationData);
+      this.sentData.set(data.uuid, data);
+      this.socket.emit('stationData', data);
     }
   }
 
   sendAllStationData({ settings }) {
-    console.log('TODO!');
+    if (this.socket.connected) {
+      for (const [, value] of Object.entries(settings.stations)) {
+        this.sendIndividualStationData({ stationData: value });
+      }
+    }
   }
 }
 
 export default ServerConnection;
 
 if (esMain(import.meta)) {
-  console.log('.');
   const socketServerSubscriber = new ServerConnection({
     settings: { server: { service: 'http', fqdn: '127.0.0.1', port: 3003 } },
-    messageHandler: console.log,
+    messageHandler: (data) => {
+      console.log(data);
+      // if (data.data && data.data.inputs && data.data.inputs.length > 0) {
+      //   console.log(data.data.inputs[1]);
+      // }
+    },
   });
   socketServerSubscriber.start();
 }

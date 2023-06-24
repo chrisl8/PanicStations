@@ -71,3 +71,4 @@ settings.json5
 gamePlayStats.sqlite
 statistics.csv
 database.sqlite
+/server.sqlite

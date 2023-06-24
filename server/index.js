@@ -17,7 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = dirname(__filename);
 
-const dbName = `${__dirname}/database.sqlite`;
+const dbName = `${__dirname}/../server.sqlite`;
 const db = new sqlite3.Database(dbName, (err) => {
   if (err) {
     console.error(err.message);
@@ -262,67 +262,21 @@ async function sendOldMessages(name) {
   }
 }
 
-const checkBasicPasswordInPostBody = (input) => {
-  let password = 'superSecret1234';
-  if (
-    configData.cloudServer.password &&
-    configData.cloudServer.password.length > 0
-  ) {
-    password = configData.cloudServer.password;
-  }
-  return input && input === password;
-};
-
-async function onNewRobot(data) {
-  if (checkBasicPasswordInPostBody(data.password)) {
-    const newRobot = new Robot(this.id, data.name);
-    robotSubscribers.set(data.name, newRobot);
-    io.sockets.emit('welcome');
-    console.log(`${data.name} has connected with Socket ID ${this.id}`);
-    await sendOldMessages(data.name);
-  } else {
-    console.log(`${data.name} validation failed`);
-    this.disconnect();
-  }
-}
-
-// eslint-disable-next-line consistent-return
-function getMapKeybyValueObjectKey(map, searchKey, searchValue) {
-  for (const [key, value] of map.entries()) {
-    if (value[searchKey] && value[searchKey] === searchValue) return key;
-  }
-}
-
-function onClientDisconnect() {
-  console.log(`Console has disconnected from Socket ID: ${this.id}`);
-
-  const entryToRemove = getMapKeybyValueObjectKey(
-    robotSubscribers,
-    'id',
-    this.id,
-  );
-
-  if (!entryToRemove) {
-    console.log('Robot not found.');
-    console.log(robotSubscribers);
-    return;
-  }
-
-  console.log(`${robotSubscribers.get(entryToRemove).name} has disconnected.`);
-  robotSubscribers.delete(entryToRemove);
-}
-
-io.on('connection', (socket) =>{
+io.on('connection', (socket) => {
   const remoteIp =
-    socket.handshake.headers['x-real-ip'] ||
-    socket.conn.remoteAddress;
-  console.log(`Socket connection started from ${remoteIp}`);
+    socket.handshake.headers['x-real-ip'] || socket.conn.remoteAddress;
+  console.log(`Console has CONNECTED from ${remoteIp} socket ${socket.id}`);
 
-  socket.on('new robot', onNewRobot);
-  socket.on('disconnect', onClientDisconnect);
+  socket.on('disconnect', () => {
+    console.log(
+      `Console has DISconnected from ${remoteIp} socket ${socket.id}`,
+    );
+    // TODO: If a console was playing the game, we need to drop it,
+    //       or at least somehow let people know it is gone?
+  });
   socket.on('stationData', (data) => {
-    socket.broadcast.emit(data);
-  })
+    socket.broadcast.emit('stationData', data);
+  });
 });
 
 app.use(express.static(`${__dirname}/public`));
