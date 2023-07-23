@@ -19,12 +19,20 @@ For my panel this code runs on a Raspberry Pi, although it works just as well on
 
 This is intended to run on a Raspberry Pi running **Raspbian** Lite. As of this writing I am using Raspberry Pi OS (32-bit) based on Debian **Bullseye**. Newer or older versions may or may not work without modification.
 
+I have used both a Pi 3 and a Pi 4 without issue. This code does tend to create high CPU load on one core, so the faster Pi 4 probably helps, especially if you have many "stations" in your game. For just two stations a Pi 3 is fine though.
+
+_Running the 64-bit version will not provide any benefit, and may leave you with less available memory._
+
 Put a fresh copy of Raspbian (RASPBERRY PI OS LITE 32-BIT) on your Raspberry Pi then run the installation script below.
 
-You will need to connect a monitor to your Pi and follow the on screen setup instructions to get the OS fully set up and working, including connecting it to your network for installation of this code.
+You can now do things like enable SSH, set host name, configure WiFi, etc. within the Raspberry Pi Imager, which will make it easier to get started without connecting a monitor to the Pi, although watching the first boot can be easier than anxiously waiting to see if it booted or not.
 
-### SSH Remote Access to Pi
-Note that Raspbian has the SSH Server disabled by default. Follow their instructions to [enable the SSH server on your Raspberry Pi](https://www.raspberrypi.com/documentation/computers/remote-access.html#enabling-the-server) if you want to do this remotely rather than from the pi itself.
+**If you did not set your username and such in the Raspberry Pi Imager** you will probably need to connect a monitor to your Pi and follow the on screen setup instructions to get the OS fully set up and working, including connecting it to your network for installation of this code. Remember to plug your monitor into HDMI port **0**!
+
+#### SSH Remote Access to Pi
+**IF you did not already do this during the imaging process:**  
+
+Raspbian has the SSH Server disabled by default. Follow their instructions to [enable the SSH server on your Raspberry Pi](https://www.raspberrypi.com/documentation/computers/remote-access.html#enabling-the-server) if you want to do this remotely rather than from the pi itself.
 
 Copied here for convenience:
  - Run `sudo raspi-config`
@@ -33,6 +41,12 @@ Copied here for convenience:
  - Choose `Yes`
  - Select `OK`
  - Choose `Finish`
+
+#### WiFi
+**IF you did not already do this during the imaging process:**
+
+If you want to set up your Pi to work over WiFi, use the same `sudo raspi-config` menu.  
+It is under `System Options`
 
 ### Pi Serial Port Enable
 You **must** enable the serial port on the Pi before running the install script below.
@@ -50,12 +64,7 @@ Copied here for convenience:
 - Choose `Finish`
 - Choose `Yes` for "Would you like to reboot now?"
 
-### WiFi
-
-If you want to set up your Pi to work over WiFi, use the same `sudo raspi-config` menu.  
-It is under `System Options`  
-
-## Install
+## Install this Code
 There is a script to install everything. Run:
 
 ```
@@ -120,18 +129,19 @@ Use the `node/testHardware/testDigitalReadout.js` script to test it and learn ho
 ### Hardware Notes
 
 #### Arduino Pins
-Pins 6 & 7 are the lowest two pins I can seem to use the ARM switches on.
-I'm not sure what is up with pins 0 to 5. Need to look that up.
+https://www.arduino.cc/reference/en/language/functions/communication/serial/  
+Pins 0 and 1 are connected to the USB Serial device, so they **cannot** be used with this code.  
+Do not plug anything into pins 0 and 1.
+
+https://www.arduino.cc/reference/en/language/functions/analog-io/analogwrite/  
+Online Pins 2-13 & 44-46 can be used for "isAnode: true" LEDs. (15 pins),  
+although other pins can be used for "regular" LEDs.
 
 #### Potentiometers
 Potentiometers must be powered with FIVE volts from Arduino, not the 3.3v line.
 
 #### Using Analog pins as Digital on Arduino with Johnny-Five
 To use Analog pins as Digital, use a number by adding the next pin up (54) to the A number.
-
-#### Pins in use by this project
-Switches: pins 32-53
-Small Buttons: pins 2-5, 8-13, 22-31
 
 ### Version 1.0 Improvements:
 * Better box with fancy metallic looking paint.
