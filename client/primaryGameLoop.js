@@ -62,7 +62,10 @@ function generateNextInput({ settings, gameState }) {
       let newInput;
       do {
         newInput = getRandomInt(1, value.inputs.length - 1);
-      } while (value.recentInputList.length > 0 && value.recentInputList.indexOf(newInput) !== -1);
+      } while (
+        value.recentInputList.length > 0 &&
+        value.recentInputList.indexOf(newInput) !== -1
+      );
       value.recentInputList.push(newInput);
       value.recentInputList.shift();
 
@@ -283,6 +286,39 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
         gameState.loopState = 'intro';
       }
       break;
+    case 'randomFlashingLights': {
+      // TODO: Pick a random LED on the board, and perform an random action.
+      //       I think each game loop should just operate on ONE LED, not all of them.
+      //       Johnny-Five LED methods:
+      //       http://johnny-five.io/api/led/
+
+      // Create a list of all LEDs so we can pick one
+      const ledList = [];
+      for (const [key, value] of Object.entries(settings.stations)) {
+        for (const input of value.inputs) {
+          if (input.ledPin) {
+            const inputWithStation = { ...input };
+            inputWithStation.station = key;
+            ledList.append(inputWithStation);
+          }
+        }
+      }
+
+      const ledListEntry = getRandomInt(0, ledList.length - 1);
+      const led = ledList[ledListEntry];
+
+      if (
+        johnnyFiveObjects.hasOwnProperty(
+          `${led.key}-${led.type}-${led.subType}-${led.id}-led`,
+        )
+      ) {
+        johnnyFiveObjects[
+          `${led.key}-${led.type}-${led.subType}-${led.id}-led`
+        ].toggle();
+      }
+
+      break;
+    }
     default:
       display.update({ gameState, settings, state: 'crash', data: '' });
       break;
