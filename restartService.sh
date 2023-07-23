@@ -14,6 +14,11 @@ done
 SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 # echo "${SCRIPT_DIR}" # For debugging
 
-cd "${SCRIPT_DIR}"/ || exit 1
-pm2 flush
-pm2 restart all
+if [[ -e "${SCRIPT_DIR}"/settings.json5 ]]; then
+  cd "${SCRIPT_DIR}"/ || exit 1
+  pm2 flush
+  pm2 restart all
+else
+  echo "You MUST provide a settings.json5 file before starting the service!"
+  exit 1
+fi
