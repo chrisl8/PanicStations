@@ -37,7 +37,7 @@ function generateNextInput({ settings, gameState }) {
 
       if (!value.recentInputList) {
         // The recentInputList prevents repeating of recent inputs when selecting new inputs randomly,
-        // because true random often has long chains of repeats, which is not percieved as
+        // because true random often has long chains of repeats, which is not perceived as
         // random to humans, and is not fun either.
 
         // Start with an empty array, which means it will not be used at all.
