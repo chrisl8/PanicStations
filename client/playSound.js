@@ -22,7 +22,14 @@ const playSound = ({ sound, settings }) => {
       playSoundCommand = `(New-Object Media.SoundPlayer "${soundFilePath}").PlaySync();`;
       exec(playSoundCommand, { shell: 'powershell.exe' });
     } else {
-      playSoundCommand = `amixer -q -M sset ${settings.volume.alsaMixerDeviceName} ${settings.volume.setting}%;aplay "${soundFilePath}"`;
+      playSoundCommand = '';
+      if (
+        settings.hasOwnProperty('volume') &&
+        settings.volume.hasOwnProperty('alsaMixerDeviceName')
+      ) {
+        playSoundCommand = `amixer -q -M sset ${settings.volume.alsaMixerDeviceName} ${settings.volume.setting}%;`;
+      }
+      playSoundCommand = `${playSoundCommand}aplay "${soundFilePath}"`;
       exec(playSoundCommand);
     }
   }
