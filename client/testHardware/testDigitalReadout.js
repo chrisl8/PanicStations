@@ -1,9 +1,18 @@
 import five from 'johnny-five';
+import process from 'process';
 import wait from '../include/wait.js';
 import pad from '../include/pad.js';
 
+const isWindows = process.platform === 'win32';
+let port;
+if (isWindows) {
+  port = 'COM6';
+} else {
+  port = '/dev/ttyACM0';
+}
+
 const board = new five.Board({
-  port: 'COM6',
+  port,
   repl: false, // IF you don't want the REPL to display, because maybe you are doing something else on the terminal, turn it off this way.
   debug: true, // Same for the "debug" messages like board Found and Connected.
 });
