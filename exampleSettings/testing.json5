@@ -1,0 +1,73 @@
+{
+  debug: true, // Use this to see input on screen
+  // Note that if you use debug and useScreen both it will make a mess on the screen
+  noTimeOut: true, // Give unlimited time for each input. For testing. This ruins the game.
+  loopTime: 100,
+  useScreen: false, // Should the game use the screen to display information or not
+  johnnyFiveRepl: false,
+  johnnyFiveDebug: false,
+  runWithoutArduino: false, // Use for debugging, otherwise always false
+  potChangeThreshold: 25,
+  server: { service: 'http', fqdn: '127.0.0.1', port: 3003 },
+  primaryJohnnyFiveArduinoPort: {
+    location: 'ID_USB_SERIAL_SHORT',
+    string: '857343237303515162C1',
+  },
+  soundFilenames: {
+    success: '328120__kianda__powerup',
+    incorrect: 'error',
+    bigButton: 'theOneButton',
+    armingSwitch: '369867__samsterbirdies__radio-beep',
+    switchOff: '4',
+    gameOver: 'lose',
+    random: [
+      'copyrighted/CastleInTheSky-Ding',
+      'copyrighted/CastleInTheSky-Zap',
+    ],
+  },
+  successSoundName: '328120__kianda__powerup',
+  incorrectSoundName: 'error',
+  bigButtonSoundName: 'theOneButton',
+  armingSwitchSoundName: '369867__samsterbirdies__radio-beep',
+  switchOffSoundName: '4',
+  gameOverSoundName: 'lose',
+  initialTime: 10, // How much time you start out with when the game begins.
+  scoreKeeperPixelCount: 53,
+  stations: {
+    one: {
+      lcdPort: {
+        location: 'ID_PATH_TAG',
+        string: 'platform-fd500000_pcie-pci-0000_01_00_0-usb-0_1_2_2_1_0',
+      },
+      inputs: [
+        //        {
+        //          id: 2,
+        //          pin: 14,
+        //          //          ledPin: 14,
+        //          //          ledIsAnode: true,
+        //          type: 'switch',
+        //          subType: 'small',
+        //          isPullup: true,
+        //          label: 'Switch One',
+        //          currentStatus: null,
+        //          hasBeenPressed: false,
+        //        },
+        {
+          id: 24,
+          pin: 'A0',
+          type: 'knob',
+          currentStatus: null,
+          hasBeenPressed: false,
+          currentSetting: null,
+          previousSetting: null,
+          label: 'Knob One',
+          up: 'Up',
+          left: 'Left',
+          right: 'Right',
+        },
+      ],
+      uuid: '0fcc1c21-b7da-4b73-8102-25945387789b',
+    },
+  },
+  uuid: 'cc42e470-2b65-4211-914b-df39864dc5b8',
+}
