@@ -2,6 +2,51 @@
 import five from 'johnny-five';
 import playSound from '../playSound.js';
 import UsbDevice from '../UsbDevice.js';
+import getRange from '../include/getRange.js';
+
+// TODO: This is Arduino Mega specific. Does that matter?
+const pwmPins = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 44, 45, 46];
+
+const smartLedActions = ({ led, action, pinSettings, value }) => {
+  switch (action) {
+    case 'on':
+      console.log(`LED pin ${pinSettings.ledPin} ON`);
+      if (
+        pinSettings.ledIsAnode &&
+        pwmPins.indexOf(pinSettings.ledPin) === -1
+      ) {
+        led.off();
+      } else {
+        led.on();
+      }
+      return true;
+    case 'off':
+      console.log(`LED pin ${pinSettings.ledPin} off`);
+      if (
+        pinSettings.ledIsAnode &&
+        pwmPins.indexOf(pinSettings.ledPin) === -1
+      ) {
+        led.on();
+      } else {
+        led.off();
+      }
+      return true;
+    case 'brightness':
+      if (
+        value !== undefined &&
+        value !== null &&
+        pwmPins.indexOf(pinSettings.ledPin) > -1
+      ) {
+        console.log(`LED in ${pinSettings.ledPin} Brightness ${value}`);
+        led.brightness(value);
+        return true;
+      }
+      return false;
+    default:
+      console.error(`Unknown led action: ${action}`);
+      return false;
+  }
+};
 
 async function initializeHardware({ settings, gameState }) {
   // TODO: There may be more than one Arduino. Two stations may share one.
@@ -98,6 +143,22 @@ async function initializeHardware({ settings, gameState }) {
               pin: input.pin,
               isPullup: input.isPullup,
             });
+            if (input.ledPin) {
+              johnnyFiveObjects[
+                `${key}-${input.type}-${input.subType}-${input.id}-led`
+              ] = new five.Led({
+                pin: input.ledPin,
+                isAnode: input.ledIsAnode && pwmPins.indexOf(input.ledPin) > -1,
+              });
+              // Initialize LEDs as off.
+              smartLedActions({
+                led: johnnyFiveObjects[
+                  `${key}-${input.type}-${input.subType}-${input.id}-led`
+                ],
+                action: 'off',
+                pinSettings: input,
+              });
+            }
             johnnyFiveObjects[
               `${key}-${input.type}-${input.subType}-${input.id}`
             ].on('press', () => {
@@ -111,15 +172,26 @@ async function initializeHardware({ settings, gameState }) {
                   soundName = settings.soundFilenames.bigButton;
                 }
               }
+              if (input.ledPin) {
+                // TODO: More nuanced control of LED based on various things.
+                smartLedActions({
+                  led: johnnyFiveObjects[
+                    `${key}-${input.type}-${input.subType}-${input.id}-led`
+                  ],
+                  action: 'on',
+                  pinSettings: input,
+                });
+              }
               // TODO: Somehow fix the spamming of the sound when turning the Arming switch off.
               // TODO: The LCD screen should say when it is waiting for OTHER stations to disarm after THIS station is disarmed.
               if (input.subType === 'arm') {
                 soundName = settings.soundFilenames.armingSwitch;
-                settings.stations[key].armed = true;
+                // TODO: Enable this when the game is supposed to work again.
+                // settings.stations[key].armed = true;
               }
               if (settings.debug) {
                 console.log(`Play Sound: ${soundName}`);
-                console.log(`[${key}] ${input.label} ON`);
+                console.log(`Station ${key} | ${input.label} ON`);
               }
               if (
                 gameState.loopState === 'gameInProgress' ||
@@ -169,7 +241,17 @@ async function initializeHardware({ settings, gameState }) {
               input.hasBeenPressed = true;
               input.currentStatus = 'off';
               if (settings.debug) {
-                console.log(`[${key}] ${input.label} OFF`);
+                console.log(`Station ${key} | ${input.label} OFF`);
+              }
+              if (input.ledPin) {
+                // TODO: More nuanced control of LED based on various things.
+                smartLedActions({
+                  led: johnnyFiveObjects[
+                    `${key}-${input.type}-${input.subType}-${input.id}-led`
+                  ],
+                  action: 'off',
+                  pinSettings: input,
+                });
               }
               if (input.subType === 'arm') {
                 settings.stations[key].armed = false;
@@ -194,6 +276,23 @@ async function initializeHardware({ settings, gameState }) {
               // freq: 250 // This will emit data every x milliseconds, even if no change has occurred.
             });
 
+            if (input.ledPin) {
+              johnnyFiveObjects[
+                `${key}-${input.type}-${input.subType}-${input.id}-led`
+              ] = new five.Led({
+                pin: input.ledPin,
+                isAnode: input.ledIsAnode && pwmPins.indexOf(input.ledPin) > -1,
+              });
+              // Initialize LEDs as off.
+              smartLedActions({
+                led: johnnyFiveObjects[
+                  `${key}-${input.type}-${input.subType}-${input.id}-led`
+                ],
+                action: 'off',
+                pinSettings: input,
+              });
+            }
+
             // Inject the `sensor` hardware into
             // the Repl instance's context;
             // allows direct command line access
@@ -216,10 +315,25 @@ async function initializeHardware({ settings, gameState }) {
               input.hasBeenPressed = true;
               input.currentStatus = this.value;
               if (settings.debug) {
-                console.log(`\nStation ${key}`);
-                console.log(input);
+                console.log(
+                  `Station ${key} input ${input.label} ${getRange(this.value)}`,
+                );
               }
-              // console.log(input);
+              if (input.ledPin) {
+                // TODO: More nuanced control of LED based on various things.
+                let brightnessValue = (this.value * 255) / 1024;
+                if (brightnessValue < 50) {
+                  brightnessValue = 0;
+                }
+                smartLedActions({
+                  led: johnnyFiveObjects[
+                    `${key}-${input.type}-${input.subType}-${input.id}-led`
+                  ],
+                  action: 'brightness',
+                  pinSettings: input,
+                  value: brightnessValue,
+                });
+              }
             });
           }
           if (settings.debug) {
