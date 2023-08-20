@@ -45,14 +45,6 @@ try {
     );`;
   await db.query(sqlCreateTable, []);
 
-  // Creating the twilio table if it does not exist.
-  sqlCreateTable = `CREATE TABLE IF NOT EXISTS twilio (
-      smsText TEXT,
-      smsTo TEXT,
-      smsFrom TEXT
-    );`;
-  await db.query(sqlCreateTable, []);
-
   // Creating the generic message table if it does not exist.
   sqlCreateTable = `CREATE TABLE IF NOT EXISTS messages
                     (
@@ -143,34 +135,6 @@ const getAllHostsDb = async () => {
     }
   } catch (e) {
     console.error(`Error getting host list from database:`);
-    console.error(e.message);
-  }
-  return result;
-};
-
-const addTwilioMessage = async (message) => {
-  let result = false;
-  try {
-    const sql =
-      'INSERT INTO twilio (smsText, smsTo, smsFrom) VALUES ($1, $2, $3);';
-    await db.query(sql, [message.smsText, message.smsTo, message.smsFrom]);
-    result = true;
-  } catch (e) {
-    console.error(`Error adding Twilio message to database:`);
-    console.error(e.message);
-  }
-  return result;
-};
-
-const addMessage = async ({ to, message, from }) => {
-  let result = false;
-  try {
-    const sql =
-      'INSERT INTO messages (text, `to`, `from`) VALUES ($1, $2, $3);';
-    await db.query(sql, [message, to, from]);
-    result = true;
-  } catch (e) {
-    console.error(`Error adding Twilio message to database:`);
     console.error(e.message);
   }
   return result;
