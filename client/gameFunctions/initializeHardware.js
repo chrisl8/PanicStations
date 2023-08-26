@@ -7,10 +7,12 @@ import getRange from '../include/getRange.js';
 // TODO: This is Arduino Mega specific. Does that matter?
 const pwmPins = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 44, 45, 46];
 
-const smartLedActions = ({ led, action, pinSettings, value }) => {
+const smartLedActions = ({ settings, led, action, pinSettings, value }) => {
   switch (action) {
     case 'on':
-      console.log(`LED pin ${pinSettings.ledPin} ON`);
+      if (settings.debug) {
+        console.log(`LED pin ${pinSettings.ledPin} ON`);
+      }
       if (
         pinSettings.ledIsAnode &&
         pwmPins.indexOf(pinSettings.ledPin) === -1
@@ -21,7 +23,9 @@ const smartLedActions = ({ led, action, pinSettings, value }) => {
       }
       return true;
     case 'off':
-      console.log(`LED pin ${pinSettings.ledPin} off`);
+      if (settings.debug) {
+        console.log(`LED pin ${pinSettings.ledPin} off`);
+      }
       if (
         pinSettings.ledIsAnode &&
         pwmPins.indexOf(pinSettings.ledPin) === -1
@@ -37,7 +41,9 @@ const smartLedActions = ({ led, action, pinSettings, value }) => {
         value !== null &&
         pwmPins.indexOf(pinSettings.ledPin) > -1
       ) {
-        console.log(`LED in ${pinSettings.ledPin} Brightness ${value}`);
+        if (settings.debug) {
+          console.log(`LED in ${pinSettings.ledPin} Brightness ${value}`);
+        }
         led.brightness(value);
         return true;
       }
@@ -152,6 +158,7 @@ async function initializeHardware({ settings, gameState }) {
               });
               // Initialize LEDs as off.
               smartLedActions({
+                settings,
                 led: johnnyFiveObjects[
                   `${key}-${input.type}-${input.subType}-${input.id}-led`
                 ],
@@ -175,6 +182,7 @@ async function initializeHardware({ settings, gameState }) {
               if (input.ledPin) {
                 // TODO: More nuanced control of LED based on various things.
                 smartLedActions({
+                  settings,
                   led: johnnyFiveObjects[
                     `${key}-${input.type}-${input.subType}-${input.id}-led`
                   ],
@@ -246,6 +254,7 @@ async function initializeHardware({ settings, gameState }) {
               if (input.ledPin) {
                 // TODO: More nuanced control of LED based on various things.
                 smartLedActions({
+                  settings,
                   led: johnnyFiveObjects[
                     `${key}-${input.type}-${input.subType}-${input.id}-led`
                   ],
@@ -255,6 +264,9 @@ async function initializeHardware({ settings, gameState }) {
               }
               if (input.subType === 'arm') {
                 settings.stations[key].armed = false;
+                if (settings.debug) {
+                  console.log(`Station ${key} DIS-armed.`);
+                }
               }
               if (
                 input.type === 'switch' &&
@@ -285,6 +297,7 @@ async function initializeHardware({ settings, gameState }) {
               });
               // Initialize LEDs as off.
               smartLedActions({
+                settings,
                 led: johnnyFiveObjects[
                   `${key}-${input.type}-${input.subType}-${input.id}-led`
                 ],
@@ -326,6 +339,7 @@ async function initializeHardware({ settings, gameState }) {
                   brightnessValue = 0;
                 }
                 smartLedActions({
+                  settings,
                   led: johnnyFiveObjects[
                     `${key}-${input.type}-${input.subType}-${input.id}-led`
                   ],
