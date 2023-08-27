@@ -122,11 +122,6 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
   }
   switch (gameState.loopState) {
     case 'intro':
-      gameState.clockUpdate = updateDigitalReadouts({
-        gameState,
-        settings,
-        johnnyFiveObjects,
-      });
       display.update({ gameState, settings, state: 'intro', data: '' });
       // TODO: This requires all panels to be armed to start.
       //       Change this to allow playing with only the armed panels,
@@ -152,14 +147,6 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
           (x) => x.id === settings.stations[key].startGameButtonId,
         );
         if (startButtonIndex > -1) {
-          if (settings.debug) {
-            console.log(
-              'waitingForPlayers',
-              settings.stations[key].inputs[startButtonIndex].label,
-              'has been pressed',
-              settings.stations[key].inputs[startButtonIndex].hasBeenPressed,
-            );
-          }
           if (!settings.stations[key].inputs[startButtonIndex].hasBeenPressed) {
             allStationsAreGo = false;
             // TODO: Set LCD Display telling the user which button to push to start game.
@@ -171,7 +158,7 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
               data: { station: key },
             });
           } else {
-            console.log('.');
+            console.log('Other players?');
             // TODO: Set LCD Display to tell user that we are waiting on other players to press their start button.
           }
         } else {
@@ -284,7 +271,7 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
           }
           gameState.loopState = 'gameOver';
         } else {
-          gameState.clockUpdate = updateDigitalReadouts({
+          updateDigitalReadouts({
             gameState,
             settings,
             johnnyFiveObjects,
@@ -330,6 +317,11 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
         }
       }
       if (allStationsDisarmed) {
+        updateDigitalReadouts({
+          gameState,
+          settings,
+          johnnyFiveObjects,
+        });
         gameState.loopState = 'intro';
       }
       break;
