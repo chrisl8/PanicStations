@@ -62,7 +62,10 @@ function generateNextInput({ settings, gameState }) {
       let newInput;
       do {
         newInput = getRandomInt(1, value.inputs.length - 1);
-      } while (value.recentInputList.length > 0 && value.recentInputList.indexOf(newInput) !== -1);
+      } while (
+        value.recentInputList.length > 0 &&
+        value.recentInputList.indexOf(newInput) !== -1
+      );
       value.recentInputList.push(newInput);
       value.recentInputList.shift();
 
