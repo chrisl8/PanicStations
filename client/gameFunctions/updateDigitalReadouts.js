@@ -2,17 +2,17 @@ import pad from '../include/pad.js';
 
 function updateDigitalReadouts({ gameState, settings, johnnyFiveObjects }) {
   let clockUpdate = gameState.clockUpdate;
-  if (gameState.clockUpdate > 5 && !settings.runWithoutArduino) {
+  if (gameState.clockUpdate > 5) {
     const output = pad(
       gameState.maxTime * (1000 / settings.loopTime) -
         gameState.timeElapsedForThisInput || 0,
       4,
     );
-    // TODO: This must be set to a per station item.
-    /*
-    johnnyFiveObjects.digitalReadout1.print(output);
-    johnnyFiveObjects.digitalReadout2.print(output);\
-     */
+    for (const [key] of Object.entries(settings.stations)) {
+      if (johnnyFiveObjects.hasOwnProperty(`${key}-digialReadout`)) {
+        johnnyFiveObjects[`${key}-digialReadout`].print(output);
+      }
+    }
     clockUpdate = 0;
   } else {
     clockUpdate++;

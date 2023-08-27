@@ -124,6 +124,13 @@ async function initializeHardware({ settings, gameState }) {
       }
 
       for (const [key, value] of Object.entries(settings.stations)) {
+        if (value.hasDigitalReadout) {
+          johnnyFiveObjects[`${key}-digialReadout`] = new five.Led.Digits({
+            controller: 'HT16K33',
+          });
+          johnnyFiveObjects[`${key}-digialReadout`].print('0000');
+        }
+
         // eslint-disable-next-line no-loop-func
         value.inputs.forEach((input) => {
           if (

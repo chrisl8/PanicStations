@@ -24,6 +24,7 @@ function generateNextInput({ settings, gameState }) {
     //       or have some other function?
     //       Ether way, I don't think it belongs here in the generateNextInput function.
     //       And test it.
+    //       Basically, we are using the switch position to determine if the user is in the game, so if the switch is bumped, they exit the game!
     if (value.armed) {
       // TODO: We may only want to do this for some stations and not others, i.e. if we are allowing one player to be done before the other,
       //       aka. playing "out of sync"
@@ -276,13 +277,11 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
           1
         ) {
           display.update({ gameState, settings, state: 'maxTimeReached' });
-          // TODO: This must be set up based on a per station setup.
-          /*
-          if (!settings.runWithoutArduino) {
-            johnnyFiveObjects.digitalReadout1.print('0000');
-            johnnyFiveObjects.digitalReadout2.print('0000');
+          for (const [key] of Object.entries(settings.stations)) {
+            if (johnnyFiveObjects.hasOwnProperty(`${key}-digialReadout`)) {
+              johnnyFiveObjects[`${key}-digialReadout`].print('0000');
+            }
           }
-           */
           gameState.loopState = 'gameOver';
         } else {
           gameState.clockUpdate = updateDigitalReadouts({
