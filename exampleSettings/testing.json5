@@ -58,8 +58,6 @@
           type: 'knob',
           currentStatus: null,
           hasBeenPressed: false,
-          currentSetting: null,
-          previousSetting: null,
           label: 'Knob One',
           up: 'Up',
           left: 'Left',

@@ -39,6 +39,7 @@
         location: 'ID_PATH_TAG',
         string: 'platform-fd500000_pcie-pci-0000_01_00_0-usb-0_1_2_3_1_0',
       },
+      hasDigitalReadout: true,
       inputs: [
         {
           id: 1,
@@ -416,7 +417,7 @@
           type: 'button',
           subType: 'big',
           isPullup: true,
-          label: 'Big Button',
+          label: 'Big Yellow Button',
           currentStatus: null,
           hasBeenPressed: false,
         },
