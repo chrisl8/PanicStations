@@ -112,8 +112,13 @@ function generateNextInput({ settings, gameState }) {
  * @param {Object} johnnyFiveObjects
  * @returns {Promise<void>}
  */
+let previousGameLoopState;
 async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
   let gamePlayStats;
+  if (settings.debug && gameState.loopState !== previousGameLoopState) {
+    console.log(`GameLoop State: ${gameState.loopState}`);
+    previousGameLoopState = gameState.loopState;
+  }
   switch (gameState.loopState) {
     case 'intro':
       gameState.clockUpdate = updateDigitalReadouts({
@@ -129,16 +134,59 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
       //       If so, tell THAT station to push "x" button to start.
       //              and other stations to arm to join.
       // eslint-disable-next-line no-case-declarations
-      let allStationsArmed = true;
+      let anyStationArmed = false;
       for (const [, value] of Object.entries(settings.stations)) {
-        if (!value.armed) {
-          allStationsArmed = false;
+        if (value.armed) {
+          anyStationArmed = true;
         }
       }
-      if (allStationsArmed) {
+      if (anyStationArmed) {
+        gameState.loopState = 'waitingForPlayers';
+      }
+      break;
+    case 'waitingForPlayers': {
+      let allStationsAreGo = true;
+      for (const [key, value] of Object.entries(settings.stations)) {
+        const startButtonIndex = settings.stations[key].inputs.findIndex(
+          (x) => x.id === settings.stations[key].startGameButtonId,
+        );
+        if (startButtonIndex > -1) {
+          if (settings.debug) {
+            console.log(
+              'waitingForPlayers',
+              settings.stations[key].inputs[startButtonIndex].label,
+              'has been pressed',
+              settings.stations[key].inputs[startButtonIndex].hasBeenPressed,
+            );
+          }
+          if (!settings.stations[key].inputs[startButtonIndex].hasBeenPressed) {
+            allStationsAreGo = false;
+            // TODO: Set LCD Display telling the user which button to push to start game.
+            value.lcdDisplayText = `When all players have armed, press ${settings.stations[key].inputs[startButtonIndex].label} to begin`;
+            display.update({
+              gameState,
+              settings,
+              state: 'armed',
+              data: { station: key },
+            });
+          } else {
+            console.log('.');
+            // TODO: Set LCD Display to tell user that we are waiting on other players to press their start button.
+          }
+        } else {
+          allStationsAreGo = false;
+          console.error(`Station ${key} has no startButtonIndex.`);
+        }
+      }
+
+      // TODO: If armed, then
+      // TODO: IF the "go" button has been pressed
+      // TODO: Then label as GO
+      if (allStationsAreGo) {
         gameState.loopState = 'startNewGame';
       }
       break;
+    }
     case 'startNewGame':
       // Reset all global game state
       gameState.timeElapsedForThisInput = 0;

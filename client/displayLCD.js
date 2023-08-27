@@ -65,6 +65,9 @@ class DisplayLCD {
           },
         ];
         break;
+      case 'armed':
+        lcdData = [{ text: stationData.lcdDisplayText }];
+        break;
       case 'notStarted':
         break;
       case 'gameOver':

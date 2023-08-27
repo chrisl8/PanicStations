@@ -37,12 +37,32 @@ while (!gameState.hardwareInitialized) {
   await wait(250);
 }
 
-// Connect to the server it it exists
+// Wait for at least one input from all switches before starting
+// also ensure hasBeenPressed is false.
+let allInputsReady;
+while (!allInputsReady) {
+  await wait(250);
+  allInputsReady = true;
+  for (const [, value] of Object.entries(settings.stations)) {
+    // eslint-disable-next-line no-loop-func
+    value.inputs.forEach((input) => {
+      // eslint-disable-next-line no-param-reassign
+      input.hasBeenPressed = false;
+      if (!input.initialized && !input.type === 'knob') {
+        allInputsReady = false;
+      }
+    });
+  }
+}
+
+// Connect to the server if it exists
 let server;
 if (settings.server) {
   server = new ServerConnection({ settings, messageHandler: console.log });
   server.start({ settings });
 }
+
+console.log(`Initiating Primary Game Loop...`);
 
 // Game Update loop.
 while (!gameState.shutdownRequested) {

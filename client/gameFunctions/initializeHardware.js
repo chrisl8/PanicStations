@@ -85,17 +85,6 @@ async function initializeHardware({ settings, gameState }) {
 
       // TODO: Do we need to update/replace the firmata on either board?
 
-      // TODO: This must be set up on a per station basis.
-      /*
-      johnnyFiveObjects.digitalReadout2 = new five.Led.Digits({
-        controller: 'HT16K33',
-      });
-      johnnyFiveObjects.digitalReadout1 = new five.Led.Digits({
-        controller: 'HT16K33',
-      });
-      *
-       */
-
       // Volume Knob
       if (settings.hasOwnProperty('volume')) {
         johnnyFiveObjects.volumeKnob = new five.Sensor({
@@ -169,6 +158,7 @@ async function initializeHardware({ settings, gameState }) {
             johnnyFiveObjects[
               `${key}-${input.type}-${input.subType}-${input.id}`
             ].on('press', () => {
+              input.initialized = true;
               input.hasBeenPressed = true;
               const previousStatus = input.currentStatus;
               input.currentStatus = 'on';
@@ -194,8 +184,39 @@ async function initializeHardware({ settings, gameState }) {
               // TODO: The LCD screen should say when it is waiting for OTHER stations to disarm after THIS station is disarmed.
               if (input.subType === 'arm') {
                 soundName = settings.soundFilenames.armingSwitch;
-                // TODO: Enable this when the game is supposed to work again.
-                // settings.stations[key].armed = true;
+                // Clear Start Game Button just in case it was pressed while game was not going
+                if (
+                  settings.stations[key].hasOwnProperty('startGameButtonId')
+                ) {
+                  const startButtonIndex = settings.stations[
+                    key
+                  ].inputs.findIndex(
+                    (x) => x.id === settings.stations[key].startGameButtonId,
+                  );
+                  if (startButtonIndex > 0) {
+                    console.log(
+                      settings.stations[key].inputs[startButtonIndex].label,
+                      settings.stations[key].inputs[startButtonIndex]
+                        .hasBeenPressed,
+                    );
+                    settings.stations[key].inputs[
+                      startButtonIndex
+                    ].hasBeenPressed = false;
+                  } else {
+                    console.error(
+                      `Input ID ${settings.stations[key].startGameButtonId}, which is the startGameButtonId is missing from station ${key}!`,
+                    );
+                  }
+                } else {
+                  console.error(
+                    `No startGameButtonId was set for station ${key}!`,
+                  );
+                }
+
+                settings.stations[key].armed = true;
+                if (settings.debug) {
+                  console.log(`Station ${key} ARMED!`);
+                }
               }
               if (settings.debug) {
                 console.log(`Play Sound: ${soundName}`);
@@ -241,11 +262,13 @@ async function initializeHardware({ settings, gameState }) {
             johnnyFiveObjects[
               `${key}-${input.type}-${input.subType}-${input.id}`
             ].on('hold', () => {
+              input.initialized = true;
               input.currentStatus = 'on';
             });
             johnnyFiveObjects[
               `${key}-${input.type}-${input.subType}-${input.id}`
             ].on('release', () => {
+              input.initialized = true;
               input.hasBeenPressed = true;
               input.currentStatus = 'off';
               if (settings.debug) {
@@ -325,6 +348,7 @@ async function initializeHardware({ settings, gameState }) {
             ].on('change', function () {
               // Do NOT make this an arrow function!
               // this.value must reference the this that called it!
+              input.initialized = true;
               input.hasBeenPressed = true;
               input.currentStatus = this.value;
               if (settings.debug) {
