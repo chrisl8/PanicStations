@@ -44,7 +44,7 @@ cd
 
 printf "${BLUE}${GIT_REPO_AND_FOLDER} repository${NC}\n"
 if ! [[ -d ${HOME}/${GIT_REPO_AND_FOLDER} ]]; then
-  gh repo clone chrisl8/${GIT_REPO_AND_FOLDER}
+  git clone https://github.com/chrisl8/${GIT_REPO_AND_FOLDER}.git
 else
   cd "${HOME}"/${GIT_REPO_AND_FOLDER}
   git pull
