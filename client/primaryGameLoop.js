@@ -44,7 +44,7 @@ function generateNextInput({ settings, gameState }) {
         // Start with an empty array, which means it will not be used at all.
         value.recentInputList = [];
 
-        // Calculate length of recentInputList based on number of inputs on this station.
+        // Calculate the length of recentInputList based on the number of inputs on this station.
         // The Arming switch won't count, so start with length - 1;
         const inputCount = value.inputs.length - 1;
 
