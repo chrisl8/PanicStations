@@ -9,9 +9,12 @@
   runWithoutArduino: false, // Use for debugging, otherwise always false
   potChangeThreshold: 25,
   server: { service: 'http', fqdn: '127.0.0.1', port: 3003 },
-  primaryJohnnyFiveArduinoPort: {
-    location: 'ID_SERIAL_SHORT',
-    string: '55735303434351E090B0',
+  arduinoBoards: {
+    one: {
+      location: 'ID_SERIAL_SHORT',
+      string: '55735303434351E090B0',
+      ready: false,
+    },
   },
   soundFilenames: {
     success: '328120__kianda__powerup',
@@ -44,6 +47,7 @@
   stations: {
     one: {
       // NOTE: These are set by their USB location, so plugging them in differently will cause them to get lost. These have no serial numbers, so it is the only reliable way.
+      arduinoBoard: 'one',
       lcdPort: {
         location: 'ID_PATH_TAG',
         string: 'platform-3f980000_usb-usb-0_1_5_1_1_0',
@@ -77,8 +81,6 @@
           type: 'knob',
           currentStatus: null,
           hasBeenPressed: false,
-          currentSetting: null,
-          previousSetting: null,
           label: 'Demand',
           up: 'Stress Blanket',
           left: 'Kitten',
@@ -90,8 +92,6 @@
           type: 'knob',
           currentStatus: null,
           hasBeenPressed: false,
-          currentSetting: null,
-          previousSetting: null,
           label: 'Repair',
           up: 'Maintenance Drone',
           left: 'Hull',
@@ -103,8 +103,6 @@
           type: 'knob',
           currentStatus: null,
           hasBeenPressed: false,
-          currentSetting: null,
-          previousSetting: null,
           label: 'Compatibility',
           up: '2',
           left: '1',
@@ -325,6 +323,7 @@
       uuid: 'e5032bdd-2584-4b8c-8549-424a84446bcb',
     },
     two: {
+      arduinoBoard: 'one',
       lcdPort: {
         location: 'ID_PATH_TAG',
         string: 'platform-3f980000_usb-usb-0_1_5_3_1_0',
