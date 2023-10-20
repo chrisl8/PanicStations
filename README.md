@@ -198,3 +198,170 @@ To use Analog pins as Digital, use a number by adding the next pin up (54) to th
     * "ENDLESS" mode where the game never ends, you just keep doing the next thing (no timer or failure doesn't count against you)
 * Adjust screen brightness and contrast (should reset to default on reboot/power cycle)
 * Option to "Swap" LCD displays (and save port) if they are wrong.
+
+# Multiplayer Design Thoughts
+
+## Definition Notes
+
+I am attempting to use the word "Round" instead of "Game" to refer to a specific "round of the game", to avoid confusion with the general "game" itself. i.e. "We play a ROUND of Monopoly." helps make it clear when we are referring to how a specific Round went vs. how the Game itself operates in general. However, I will probably say "game" a lot of time when I really intended to say "round".
+
+## Concepts
+ - Console - A physical or virtual device where the game is played. Each console can have as many or few stations on it as desired.
+   - A "console" with zero stations would in theory just be a display of some kind, showing game status, no actual stations. See Ownership and Physical vs. Virtual Stations later.
+ - Station - A physical or virtual instance of input on the console where a player plays their game.
+   - There may be any number of stations on one console.
+ - Round - An instance of a round of play. In any given game, many variables may be different from another game.
+   - For instance
+     - Which Stations are operating can change from Round to round
+     - Game Mode can change from round to round.
+     - The Station Owner could change from round to round.
+     - Even the Round Owner could change from round to round.
+ - Session - A "session" is what one or more consoles may connect to on a server in order to share together in one group "game" and share their station and game data.
+ - Server - When more than one console is involved, a server is required to receive and distribute all station data.
+   - The server does not perform any processing on the data it receives, it simply passes it on.
+ - Ownership - Ownership applies to the entire Game and to each Station
+   - The Round Owner runs the "game loop":
+     - Tracking the score.
+     - Decides if an input was correct.
+     - Deciding when a player has succeeded or failed.
+     - Ending the round.
+     - The Round Owner will be elected and either be:
+       - If the Console's UUID is listed as "Round Owner" on the server, it will always be the Round Owner
+       - Otherwise the Full Console Type with the MOST Stations will always be the Round Owner
+   - The Station Owner tracks all user input to the given station and records it in the Station Data, sending it to the Server when there are updates.
+     - Does not determine success particularly, but because it controls the local station, it must do things like play sounds and light up LEDs locally as it sees fit, based on both general game design decisions and rules specific to this Game. 
+ - Station Data - A representation of all aspects of a given station that is only updated by the Station Owning Console.
+ - Round Data - A representation of the Round itself that is only updated by the Round Owning Console.
+ - Game Loop - Each Console runs code that has a Game Loop just like most games. Nothing fancy here, just know that the processing of inputs and game logic does happen in a Game Loop so there are the usual order of operation and "batching" issues that go with this. i.e.
+   - Two inputs may be seen on the same loop or on different loops and this will affect game logic and should be considered when coding.
+ - Overlap or Overlapping Station - Two or more stations on different Consoles with the same UUID. Only one Console can ever update the Station Data for such a station, but as many other Consoles as want to may "mirror" the input of those Stations or ignore it and leave their instance of the Station dark.
+   - Which Console Owns a station during a given Round can change from Round to Round, perhaps based on which instance is Armed first?
+     - Be sure to indicate to the player somehow whether they are in Control or not.
+ - Console Type - There will be Types of Consoles to help determine who does what. Other types could be added, but only do so if it affects who the Server or other Clients treat them. At the moment the only issues is deciding which Client will be a Round Owner Currently planned Console Types are:
+   - Full - This is a full on Console with one or more Stations that can run the entire game by itself stand-alone if need be.
+     - The key takeaway is that it can be a Round Owner.
+     - For now this will be Node.js based Clients.
+   - Stations Only - This is a client that has Stations, but cannot run the game logic itself, so it will never be a Round Owner.
+     - For now this is expected to be Unity based clients and maybe eventually Web based as well.
+
+## Physical and Virtual Stations and Overlap
+A console can exist as a physical device or in a virtual setting such as a VR game instance of a console, and that console will have stations.
+
+Stations can either be unique or overlap, the primary purpose here being that you can have an entire duplicate of a physical console in a VR setting. This is not limited to that setup though, as you could also overlap two physical consoles.
+
+Each station has a UUID ID. If the same UUID exists on two stations within the same Session, then one is expected to "mirror" the other.  
+The Console which Owns that station will be the only one that updates and broadcasts updates for that station.
+Other consoles will simply update whatever view of the station they can or want to upon receiving data for that station.
+i.e. A VR instance can show when other players press buttons or flip switches, however a physical console cannot flip its switches when a VR version inputs a switch flip.  
+Consoles with stations that they do not own must not update the data for their stations, even if inputs change locally, they must be ignored.
+
+## Client/Server Operation
+ - Each Client will send each OWNED Station Data to the Server at the end of the Game Loop.
+   - i.e. Don't send it on EVERY update as you might get 5 in one loop, but definitely do send whatever you have on each loop IF it changed.
+   - Clients are responsible to not spam the server with Station Data packets containing no changes, as the server won't look at them.
+     - Code could be written to spot spamming clients from other clients and notify the developer of a code issue.
+   - Clients will NEVER send data about Stations which they do not Own.
+ - The Console which Owns the Round will also send out the Round Data so that all Consoles can update their displays wit things like
+   - Score
+   - Game over
+   - etc.
+     - Again, the server should avoid sending such updates unless there is a change.
+ - The Server will always simply forward each received packet to all clients OTHER than the one which sent it.
+   - This is a built in and default feature of Socket.io, so it is easy to do.
+ - Each Client MUST IGNORE any Station Data for stations it Owns. This SHOULD NEVER HAPPEN, but just in case, the safe action is to just ignore such data.
+   - Similarly the Round Owner will ignore Round Data if it is received.
+   - It would probably be smart to log errors to the console if this happens, to help catch development bugs.
+
+## Session Thoughts
+A "Session" is what exists across the network when even one Console connects to the Server.  
+In theory many different Sessions can exist at once. i.e. Four consoles may be talking to the server, but that could be two sets of two sessions, with two different Rounds being played.  
+
+So when a Client connects to the Server some things must happen:
+ - If no Session(s) exist, one must be created. The Server will use the Session to decide who the updates from a given Client are passed to (again, in case of multiple Sessions).
+   - If Session(s) do exist, how do we decide IF this Client is added to one or starts a new one and if it gets added WHICH one to add it to?
+ - Which Client will be the Owner of the Rounds for a given Session?
+   - Can this change between Rounds?
+
+## Configuration Settings
+ - Each Console must have its own `settings` file.
+ - Each Console must define its OWN UUID within those settings, hence the file will not be the same between consoles.
+   - If two Consoles attempt to connect to the same Server with the same UUID there should be an error reported and the new connection(s) rejected.
+ - Each Station must also have its own UUID in the settings.
+   - If two Consoles both have stations that are supposed to Overlap then they can have the same UUID.
+     - Even in this situation, only ONE Console may Own that Station during a Round.
+     - Other Consoles must simply listen to the Station Data for that Station and use the data as they please. i.e. Mirror the inputs to their viewers.
+
+## Explanations
+
+- There will be a Panic Coordination Server that receives and distributes game data to all games
+  - This will be run in the cloud, but it should be possible to run it locally instead, which might be preferable for using multiple networked stations all in one location, rather than adding the Internet latency to devices that are otherwise already on the same network.
+  - To start with the server will be hard coded, but we can work on ways to "pick" a server and "invite" clients to a given session on a given server.
+- There will be the concept of both a
+   - GAME Owner
+   - STATION Owner
+ - The Game Owner will look at the station data from ALL stations and
+   - Update score
+   - Declare winners and timeouts
+   - **This does mean that the physical device that owns the game provides its players with some benefits** due to network latency making everyone else slower
+     - It might be possible to track and account for network latency to some degree, but mostly highly time dependent competitive modes should not be played over slow networks. 
+ - Each Station is entirely controlled by the client that owns it.
+   - Only this Station will update the station object for this station.
+   - WHEN this station updates said object, it will send it to the coordination server.
+   - **This means each station is responsible for its own internal station behaviors, such as**
+     - Lighting up LEDs for various situations
+       - When the input is in a specific configuration (on/correct/etc)
+       - If hints are to be given, the station must do this.
+       - etc.
+
+## Server Setup
+
+ - Every Console has a UUID. This is set in the settings config file.
+   - On hardware consoles it should be possible to display this UUID so it can be copied down.
+   - On software consoles, this may need to be generated securely on first run and then displayable.
+   - It should also be possible to INPUT this to a Console, both hardware (connect, edit file) and software
+ - The Server will have a site where you can create an account.
+ - After creating the account you may create a "Session"
+   - This will again be UUID backed but have "Friendly Name" that can be changed and will be displayed on Consoles upon connection.
+ - Once you make a session you will be allowed to type/paste in UUIDs to be part of this session,
+   - You will also be able to generate UUIDs on the site and then you can use it to set/replace the UUID on your Console
+ - Now any Console with that UUID set which connects to the server will be part of that Session.
+
+To split your own Consoles into different games, make more Sessions on the site and move your UUIDs around.
+
+Any console connecting with an unknown UUID will simply be rejected.
+
+ - Future Feature: Allow setting a specific UUID to be the Owner of all Rounds played in that Session if it is in the Session at the time.
+
+## FAQ
+ - Why doesn't the Server run the game logic and just let the Clients pass in data?
+   - We COULD do this, but I wanted to ensure that low-latency game play always happened for people centered around a multi-Station Console. It would be annoying if five people on one Console found the game laggy just because one person was remote, but if the one person's game is lagging, people won't notice as much.
+   - The solution here would be to put the Server ON the Client I think, and I even want to do that anyway to allow local multi-player without Internet latency, but at least for now I think I want the largest physical Console to just run the game internally and "bolt on" the networked Station data.
+   - To be fair, this is also the natural evolution of the existing code base. Moving everything to a Client/Server model would be a big step and should happen later if it is to happen.
+     - I will add that my other game, Witchazzan, works on the premise of distributed objects, each entirely owned and controlled by clients, and I kind of want to continue that.
+
+## MVP
+
+Initially just set up the server to accept any connection and put every connection into the same "Session" (in other words, don't even have sessions).
+
+## Config file setup
+### Port names and strings
+List all of the USB devices:
+`lsusb`
+```shell
+lsusb
+Bus 002 Device 004: ID 045b:0210 Hitachi, Ltd
+Bus 002 Device 003: ID 045b:0210 Hitachi, Ltd
+Bus 002 Device 002: ID 045b:0210 Hitachi, Ltd
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 001 Device 009: ID 2341:0042 Arduino SA Mega 2560 R3 (CDC ACM)
+Bus 001 Device 007: ID 239a:0001 Adafruit CDC Bootloader
+Bus 001 Device 005: ID 2341:0242 Arduino SA Genuino Mega 2560
+Bus 001 Device 008: ID 239a:0001 Adafruit CDC Bootloader
+Bus 001 Device 010: ID 03f0:0024 HP, Inc KU-0316 Keyboard
+Bus 001 Device 006: ID 045b:0209 Hitachi, Ltd
+Bus 001 Device 004: ID 045b:0209 Hitachi, Ltd
+Bus 001 Device 003: ID 045b:0209 Hitachi, Ltd
+Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+```
+
