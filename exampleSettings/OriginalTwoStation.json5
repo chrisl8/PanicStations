@@ -37,7 +37,12 @@
   initialTime: 10, // How much time you start out with when the game begins.
   scoreKeeperPixelCount: 53,
   volume: {
-    alsaMixerDeviceName: 'Master',
+    // Obtain the alsaMixerDeviceName with:
+    // amixer -c 0 scontrols
+    // i.e., In this case it should be 'PCM'
+    // ❯ amixer -c 0 scontrols
+    // Simple mixer control 'PCM',0
+    alsaMixerDeviceName: 'PCM',
     setting: 0, // Start with 0, and it will be set by volume knob's current position when code is started.
     zero: 0,
     minimum: 0,

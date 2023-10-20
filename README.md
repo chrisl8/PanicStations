@@ -17,7 +17,7 @@ For my panel this code runs on a Raspberry Pi, although it works just as well on
 
 ## Raspberry Pi Setup
 
-This is intended to run on a Raspberry Pi running **Raspbian** Lite. As of this writing, I am using Raspberry Pi OS (32-bit) based on Debian **Bullseye**. Newer or older versions may or may not work without modification.
+This is intended to run on a Raspberry Pi running **Raspbian** Lite. As of this writing, I am using Raspberry Pi OS (32-bit) based on Debian **Bookworm**. Newer or older versions may or may not work without modification.
 
 I have used both a Pi 3 and a Pi 4 without issue. This code does tend to create a high CPU load on one core, so the faster Pi 4 probably helps, especially if you have many "stations" in your game. For just two stations, a Pi 3 is fine though.
 
@@ -53,7 +53,6 @@ You **must** enable the serial port on the Pi before running the installation sc
 
 Follow the [instructions to enable Serial port on Pi](https://serialport.io/docs/guide-installation#raspberry-pi-linux).
 
-Copied here for convenience:  
 Copied here for convenience:
 - Run `sudo raspi-config`
 - Select `Interfacing Options`
@@ -80,6 +79,10 @@ bash <(wget -qO- --no-cache -o /dev/null https://raw.githubusercontent.com/chris
 There must be a `settings.json5` file in the root of the folder for this code to work.  
 You can find example files in the `exampleSettings` folder.  
 Copy on in before attempting to run this code.
+
+## Copyrighted or Personal Sounds
+
+If you want to access sounds files not in the repository, put them in `~/PanicStations/client/sounds`
 
 ## Running the game
 

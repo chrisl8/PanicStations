@@ -23,6 +23,13 @@ const playSound = ({ sound, settings }) => {
       exec(playSoundCommand, { shell: 'powershell.exe' });
     } else {
       playSoundCommand = '';
+      /*
+      Obtain the alsaMixerDeviceName with:
+      amixer -c 0 scontrols
+      i.e., In this case it should be 'PCM'
+      ❯ amixer -c 0 scontrols
+      Simple mixer control 'PCM',0
+       */
       if (
         settings.hasOwnProperty('volume') &&
         settings.volume.hasOwnProperty('alsaMixerDeviceName')
