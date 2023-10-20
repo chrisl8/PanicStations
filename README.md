@@ -17,15 +17,15 @@ For my panel this code runs on a Raspberry Pi, although it works just as well on
 
 ## Raspberry Pi Setup
 
-This is intended to run on a Raspberry Pi running **Raspbian** Lite. As of this writing I am using Raspberry Pi OS (32-bit) based on Debian **Bullseye**. Newer or older versions may or may not work without modification.
+This is intended to run on a Raspberry Pi running **Raspbian** Lite. As of this writing, I am using Raspberry Pi OS (32-bit) based on Debian **Bullseye**. Newer or older versions may or may not work without modification.
 
-I have used both a Pi 3 and a Pi 4 without issue. This code does tend to create high CPU load on one core, so the faster Pi 4 probably helps, especially if you have many "stations" in your game. For just two stations a Pi 3 is fine though.
+I have used both a Pi 3 and a Pi 4 without issue. This code does tend to create a high CPU load on one core, so the faster Pi 4 probably helps, especially if you have many "stations" in your game. For just two stations, a Pi 3 is fine though.
 
 _Running the 64-bit version will not provide any benefit, and may leave you with less available memory._
 
 Put a fresh copy of Raspbian (RASPBERRY PI OS LITE 32-BIT) on your Raspberry Pi then run the installation script below.
 
-You can now do things like enable SSH, set host name, configure WiFi, etc. within the Raspberry Pi Imager, which will make it easier to get started without connecting a monitor to the Pi, although watching the first boot can be easier than anxiously waiting to see if it booted or not.
+You can now do things like enable SSH, set host name, configure Wi-Fi, etc. within the Raspberry Pi Imager, which will make it easier to get started without connecting a monitor to the Pi, although watching the first boot can be easier than anxiously waiting to see if it booted or not.
 
 **If you did not set your username and such in the Raspberry Pi Imager** you will probably need to connect a monitor to your Pi and follow the on screen setup instructions to get the OS fully set up and working, including connecting it to your network for installation of this code. Remember to plug your monitor into HDMI port **0**!
 
@@ -45,11 +45,11 @@ Copied here for convenience:
 #### WiFi
 **IF you did not already do this during the imaging process:**
 
-If you want to set up your Pi to work over WiFi, use the same `sudo raspi-config` menu.  
+If you want to set up your Pi to work over Wi-Fi, use the same `sudo raspi-config` menu.  
 It is under `System Options`
 
 ### Pi Serial Port Enable
-You **must** enable the serial port on the Pi before running the install script below.
+You **must** enable the serial port on the Pi before running the installation script below.
 
 Follow the [instructions to enable Serial port on Pi](https://serialport.io/docs/guide-installation#raspberry-pi-linux).
 
@@ -71,9 +71,9 @@ There is a script to install everything. Run:
 bash <(wget -qO- --no-cache -o /dev/null https://raw.githubusercontent.com/chrisl8/PanicStations/main/setup.sh)
 ```
 
-**A reboot will be required after the first install, but you probably want to put in a settings.json5 file first. See below.**
+**A reboot will be required after the first installation, but you probably want to put in a settings.json5 file first. See below.**
 
-**NOTICE: If your LCD Displays are brand new, some settings will be saved to them on first run that will not take affect until they are power cycled once. So you may need to power them down by unplugging them from USB or powering off the Pi at least once after the first run before they will display correctly.**
+**NOTICE: If your LCD Displays are brand new, some settings will be saved to them on the first run that will not take effect until they are power cycled once. So you may need to power them down by unplugging them from USB or powering off the Pi at least once after the first run before they will display correctly.**
 
 ## Setup
 
@@ -179,7 +179,7 @@ To use Analog pins as Digital, use a number by adding the next pin up (54) to th
     * That is what the extra holes are for.
 * ~~Volume control~~
   * Test this, as it seems unreliable
-* Improved text and "interactivity" from system as you do things.
+* Improved text and "interactivity" from the system as you do things.
 * String of lights along the side to indicate progress/score/etc.
 * Alternate game modes
     * Self-driven Demo mode that just flashes lights
@@ -193,7 +193,7 @@ To use Analog pins as Digital, use a number by adding the next pin up (54) to th
 * Set "mode" for things like:
     * Competitive mode
     * Coop mode
-    * Not game, just push buttons for noise and lights.
+    * Not a game, just push buttons for noise and lights.
     * "DEMO" Mode where it just makes lights
     * "ENDLESS" mode where the game never ends, you just keep doing the next thing (no timer or failure doesn't count against you)
 * Adjust screen brightness and contrast (should reset to default on reboot/power cycle)
