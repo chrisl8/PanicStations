@@ -4,7 +4,7 @@ import playSound from '../playSound.js';
 import UsbDevice from '../UsbDevice.js';
 import getRange from '../include/getRange.js';
 
-// TODO: This is Arduino Mega specific. Does that matter?
+// TODO: This is Arduino Mega specific
 const pwmPins = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 44, 45, 46];
 
 const smartLedActions = ({ settings, led, action, pinSettings, value }) => {
