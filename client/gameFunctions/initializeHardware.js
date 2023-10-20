@@ -55,39 +55,42 @@ const smartLedActions = ({ settings, led, action, pinSettings, value }) => {
 };
 
 async function initializeHardware({ settings, gameState }) {
-  // TODO: There may be more than one Arduino. Two stations may share one.
-
-  const primaryJohnnyFiveArduinoPort = new UsbDevice(
-    settings.primaryJohnnyFiveArduinoPort.string,
-    settings.primaryJohnnyFiveArduinoPort.location,
-  );
-
-  // The Arduino FTDI chips DO have serial numbers on them, so they can be reliably found no matter where they are plugged in as long as the correct serial number is in the getsettings file.
-  settings.primaryJohnnyFiveArduinoPort.name =
-    await primaryJohnnyFiveArduinoPort.findDeviceName();
-
   const johnnyFiveObjects = {};
   if (settings.runWithoutArduino) {
     gameState.hardwareInitialized = true;
   } else {
-    const board = new five.Board({
-      port: settings.primaryJohnnyFiveArduinoPort.name,
-      repl: settings.johnnyFiveRepl, // IF you don't want the REPL to display, because maybe you are doing something else on the terminal, turn it off this way.
-      debug: settings.johnnyFiveDebug, // Same for the "debug" messages like board Found and Connected.
-    });
-    // http://johnny-five.io/api/button/
-    board.on('ready', () => {
+    const ports = [];
+
+    for (const [key, value] of Object.entries(settings.arduinoBoards)) {
+      // Multiple boards
+      // https://johnny-five.io/examples/board-multi/
+
+      // The Arduino FTDI chips DO have serial numbers on them, so they can be reliably found no matter where they are plugged in as long as the correct serial number is in the settings file.
+
       // NOTE: If we name the FILE we load to each Arduino differently,
       // then we can use THIS below to differentiate them, regardless of what port each is plugged in to or initializes first.
       // https://stackoverflow.com/a/34713418/4982408
       // console.log(board.io.firmware.name);
       // For now though using the board serial number to get the port is working fine.
 
-      // TODO: Do we need to update/replace the firmata on either board?
+      const device = new UsbDevice(value.string, value.location);
+      // eslint-disable-next-line no-await-in-loop
+      const port = await device.findDeviceName();
 
+      ports.push({
+        id: key,
+        port,
+        repl: settings.johnnyFiveRepl, // IF you don't want the REPL to display, because maybe you are doing something else on the terminal, turn it off this way.
+        debug: settings.johnnyFiveDebug, // Same for the "debug" messages like board Found and Connected.
+      });
+    }
+
+    const boards = new five.Boards(ports);
+    boards.on('ready', () => {
       // Volume Knob
       if (settings.hasOwnProperty('volume')) {
         johnnyFiveObjects.volumeKnob = new five.Sensor({
+          // TODO: This will need a board ID
           pin: settings.volume.knob.pin,
           threshold: settings.volume.knob.potChangeThreshold, // This will emit a 'change' if it changes by this much.
           // freq: 250 // This will emit data every x milliseconds, even if no change has occurred.
@@ -127,6 +130,10 @@ async function initializeHardware({ settings, gameState }) {
         if (value.hasDigitalReadout) {
           johnnyFiveObjects[`${key}-digialReadout`] = new five.Led.Digits({
             controller: 'HT16K33',
+            board: boards.byId(value.arduinoBoard),
+            // TODO: This should be dependent on setup. This cannot work on a single board system.
+            address: 0x70,
+            skipAddressValidation: true,
           });
           johnnyFiveObjects[`${key}-digialReadout`].print('0000');
         }
@@ -142,6 +149,7 @@ async function initializeHardware({ settings, gameState }) {
             johnnyFiveObjects[
               `${key}-${input.type}-${input.subType}-${input.id}`
             ] = new five.Button({
+              board: boards.byId(value.arduinoBoard),
               pin: input.pin,
               isPullup: input.isPullup,
             });
@@ -149,6 +157,7 @@ async function initializeHardware({ settings, gameState }) {
               johnnyFiveObjects[
                 `${key}-${input.type}-${input.subType}-${input.id}-led`
               ] = new five.Led({
+                board: boards.byId(value.arduinoBoard),
                 pin: input.ledPin,
                 isAnode: input.ledIsAnode && pwmPins.indexOf(input.ledPin) > -1,
               });
@@ -313,6 +322,7 @@ async function initializeHardware({ settings, gameState }) {
             johnnyFiveObjects[
               `${key}-${input.type}-${input.subType}-${input.id}`
             ] = new five.Sensor({
+              board: boards.byId(value.arduinoBoard),
               pin: input.pin,
               threshold: settings.potChangeThreshold, // This will emit a 'change' if it changes by this much.
               // freq: 250 // This will emit data every x milliseconds, even if no change has occurred.
@@ -322,6 +332,7 @@ async function initializeHardware({ settings, gameState }) {
               johnnyFiveObjects[
                 `${key}-${input.type}-${input.subType}-${input.id}-led`
               ] = new five.Led({
+                board: boards.byId(value.arduinoBoard),
                 pin: input.ledPin,
                 isAnode: input.ledIsAnode && pwmPins.indexOf(input.ledPin) > -1,
               });
