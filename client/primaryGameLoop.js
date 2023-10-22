@@ -265,8 +265,8 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
         ) {
           display.update({ gameState, settings, state: 'maxTimeReached' });
           for (const [key] of Object.entries(settings.stations)) {
-            if (johnnyFiveObjects.hasOwnProperty(`${key}-digialReadout`)) {
-              johnnyFiveObjects[`${key}-digialReadout`].print('0000');
+            if (johnnyFiveObjects.hasOwnProperty(`${key}-digitalReadout`)) {
+              johnnyFiveObjects[`${key}-digitalReadout`].print('0000');
             }
           }
           gameState.loopState = 'gameOver';

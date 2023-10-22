@@ -97,7 +97,7 @@ async function initializeHardware({ settings, gameState }) {
         });
         johnnyFiveObjects.volumeKnob.on('change', function () {
           // Do NOT make this an arrow function!
-          // this.value must reference the this that called it!
+          // this.value must reference the "this" that called it!
           // Remember knob works in reverse.
           if (this.value < settings.volume.knob.maximum) {
             settings.volume.setting = settings.volume.maximum;
@@ -128,14 +128,31 @@ async function initializeHardware({ settings, gameState }) {
 
       for (const [key, value] of Object.entries(settings.stations)) {
         if (value.hasDigitalReadout) {
-          johnnyFiveObjects[`${key}-digialReadout`] = new five.Led.Digits({
+          const digitalReadoutOptions = {
             controller: 'HT16K33',
             board: boards.byId(value.arduinoBoard),
-            // TODO: This should be dependent on setup. This cannot work on a single board system.
-            address: 0x70,
-            skipAddressValidation: true,
-          });
-          johnnyFiveObjects[`${key}-digialReadout`].print('0000');
+          };
+
+          if (
+            typeof value.hasDigitalReadout === 'object' &&
+            !Array.isArray(value.hasDigitalReadout)
+          ) {
+            if (value.hasDigitalReadout.hasOwnProperty('address')) {
+              digitalReadoutOptions.address = value.hasDigitalReadout.address;
+            }
+            if (
+              value.hasDigitalReadout.hasOwnProperty('skipAddressValidation')
+            ) {
+              digitalReadoutOptions.skipAddressValidation =
+                value.hasDigitalReadout.skipAddressValidation;
+            }
+          }
+
+          if (value.hasDigitalReadout)
+            johnnyFiveObjects[`${key}-digitalReadout`] = new five.Led.Digits(
+              digitalReadoutOptions,
+            );
+          johnnyFiveObjects[`${key}-digitalReadout`].print('0000');
         }
 
         // eslint-disable-next-line no-loop-func

@@ -7,8 +7,8 @@ function updateDigitalReadouts({ gameState, settings, johnnyFiveObjects }) {
     4,
   );
   for (const [key] of Object.entries(settings.stations)) {
-    if (johnnyFiveObjects.hasOwnProperty(`${key}-digialReadout`)) {
-      johnnyFiveObjects[`${key}-digialReadout`].print(output);
+    if (johnnyFiveObjects.hasOwnProperty(`${key}-digitalReadout`)) {
+      johnnyFiveObjects[`${key}-digitalReadout`].print(output);
     }
   }
 }

@@ -48,7 +48,10 @@
         location: 'ID_PATH_TAG',
         string: 'platform-fd500000_pcie-pci-0000_01_00_0-usb-0_1_2_3_1_0',
       },
-      hasDigitalReadout: true,
+      hasDigitalReadout: {
+        address: 0x70,
+        skipAddressValidation: true,
+      },
       startGameButtonId: 31,
       inputs: [
         {
@@ -451,7 +454,10 @@
         location: 'ID_PATH_TAG',
         string: 'platform-fd500000_pcie-pci-0000_01_00_0-usb-0_1_2_1_4_1_0',
       },
-      hasDigitalReadout: true,
+      hasDigitalReadout: {
+        address: 0x70,
+        skipAddressValidation: true,
+      },
       startGameButtonId: 31,
       inputs: [
         {
