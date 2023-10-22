@@ -3,6 +3,9 @@ import screen from './displayScreen.js';
 import DisplayLCD from './displayLCD.js';
 import UsbDevice from './UsbDevice.js';
 
+/**
+ * @param {Object} settings
+ */
 async function initialize(settings) {
   if (settings.useScreen) {
     screen.initialize({ settings });
@@ -22,7 +25,7 @@ async function initialize(settings) {
         process.exit(1);
       }
       // eslint-disable-next-line no-await-in-loop
-      await value.lcdPort.lcd.initialize({ settings });
+      await value.lcdPort.lcd.initialize({ settings, lcdPort: value.lcdPort });
     }
   }
 }

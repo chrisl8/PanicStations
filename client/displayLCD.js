@@ -21,13 +21,32 @@ class DisplayLCD {
     this.lcdData = [];
   }
 
-  async initialize({ settings }) {
+  /**
+   * Initialize Adafruit LCD Display
+   * @param {Object} settings
+   * @param {Object} lcdPort
+   */
+  async initialize({ settings, lcdPort }) {
     if (!this.portObj) {
       if (settings.debug) {
         console.log('LCD init');
       }
       this.portObj = lcd.getPortObject(this.port);
       try {
+        if (lcdPort.hasOwnProperty('brightness')) {
+          await lcd.display({
+            portObj: this.portObj,
+            operation: 'brightness',
+            input: lcdPort.brightness,
+          });
+        }
+        if (lcdPort.hasOwnProperty('contrast')) {
+          await lcd.display({
+            portObj: this.portObj,
+            operation: 'contrast',
+            input: lcdPort.contrast,
+          });
+        }
         await lcd.display({ portObj: this.portObj, operation: 'clear' });
         await lcd.display({
           portObj: this.portObj,

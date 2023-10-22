@@ -243,25 +243,25 @@ if (esMain(import.meta)) {
       'You must provide command line parameters and operations. Here are examples:',
     );
     console.log('Display text on the screen:');
-    console.log("node LCD.js text 'Test'");
+    console.log("node LCD20x4.js text 'Test'");
     console.log('Display text on the screen and select a row:');
-    console.log("node LCD.js text 'line1' line1");
-    console.log("node LCD.js text 'line2' line2");
-    console.log("node LCD.js text 'line3' line3");
-    console.log("node LCD.js text 'line4' line4");
+    console.log("node LCD20x4.js text 'line1' line1");
+    console.log("node LCD20x4.js text 'line2' line2");
+    console.log("node LCD20x4.js text 'line3' line3");
+    console.log("node LCD20x4.js text 'line4' line4");
     console.log('Send a specific hex code command:');
-    console.log('node LCD.js hex 0x58');
+    console.log('node LCD20x4.js hex 0x58');
     console.log(
       'Change the background light color. <red> <green> <blue> are numbers from 0 to 255:',
     );
-    console.log('node LCD.js color <red> <green> <blue>');
+    console.log('node LCD20x4.js color <red> <green> <blue>');
     console.log('Along with some specific commands:');
-    console.log('node LCD.js displayOn');
-    console.log('node LCD.js displayOff');
-    console.log('node LCD.js clear');
-    console.log('node LCD.js brightness <number 0 to 255>');
+    console.log('node LCD20x4.js displayOn');
+    console.log('node LCD20x4.js displayOff');
+    console.log('node LCD20x4.js clear');
+    console.log('node LCD20x4.js brightness <number 0 to 255>');
     console.log(
-      'node LCD.js contrast <number 0 to 255> 200 seems like a good default.',
+      'node LCD20x4.js contrast <number 0 to 255> 200 seems like a good default.',
     );
     process.exit();
   }
