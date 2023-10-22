@@ -3,7 +3,7 @@
   // Note that if you use debug and useScreen both it will make a mess on the screen
   noTimeOut: false, // Give unlimited time for each input. For testing. This ruins the game.
   loopTime: 100,
-  useScreen: false, // Should the game use the screen to display information or not
+  useScreen: false, // Whether the game use the screen to display information or not
   johnnyFiveRepl: false,
   johnnyFiveDebug: false,
   runWithoutArduino: false, // Use for debugging, otherwise always false
@@ -47,6 +47,13 @@
       lcdPort: {
         location: 'ID_PATH_TAG',
         string: 'platform-fd500000_pcie-pci-0000_01_00_0-usb-0_1_2_3_1_0',
+        contrast: 200,
+        brightness: 150,
+        color: {
+          red: 128,
+          green: 0,
+          blue: 128,
+        },
       },
       hasDigitalReadout: {
         address: 0x70,
@@ -453,6 +460,13 @@
       lcdPort: {
         location: 'ID_PATH_TAG',
         string: 'platform-fd500000_pcie-pci-0000_01_00_0-usb-0_1_2_1_4_1_0',
+        contrast: 200,
+        brightness: 150,
+        color: {
+          red: 128,
+          green: 0,
+          blue: 128,
+        },
       },
       hasDigitalReadout: {
         address: 0x70,

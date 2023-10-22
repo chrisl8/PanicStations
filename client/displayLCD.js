@@ -47,6 +47,20 @@ class DisplayLCD {
             input: lcdPort.contrast,
           });
         }
+        if (
+          lcdPort.hasOwnProperty('color') &&
+          lcdPort.color.hasOwnProperty('red') &&
+          lcdPort.color.hasOwnProperty('green') &&
+          lcdPort.color.hasOwnProperty('blue')
+        ) {
+          await lcd.display({
+            portObj: this.portObj,
+            operation: 'color',
+            red: lcdPort.color.red,
+            green: lcdPort.color.green,
+            blue: lcdPort.color.blue,
+          });
+        }
         await lcd.display({ portObj: this.portObj, operation: 'clear' });
         await lcd.display({
           portObj: this.portObj,

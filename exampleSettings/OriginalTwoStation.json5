@@ -3,7 +3,7 @@
   // Note that if you use debug and useScreen both it will make a mess on the screen
   noTimeOut: true, // Give unlimited time for each input. For testing. This ruins the game.
   loopTime: 100,
-  useScreen: false, // Should the game use the screen to display information or not
+  useScreen: false, // Whether the game use the screen to display information or not
   johnnyFiveRepl: false,
   johnnyFiveDebug: false,
   runWithoutArduino: false, // Use for debugging, otherwise always false

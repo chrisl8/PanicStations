@@ -167,16 +167,13 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
         }
       }
 
-      // TODO: If armed, then
-      // TODO: IF the "go" button has been pressed
-      // TODO: Then label as GO
       if (allStationsAreGo) {
         gameState.loopState = 'startNewGame';
       }
       break;
     }
     case 'startNewGame':
-      // Reset all global game state
+      // Reset all global game state values
       gameState.timeElapsedForThisInput = 0;
       gameState.maxTime = settings.initialTime;
       gameState.gameStats = {
