@@ -6,6 +6,7 @@ import wait from './include/wait.js';
 import initializeHardware from './gameFunctions/initializeHardware.js';
 import storeGamePlayStats from './utilities/storeGamePlayStats.js';
 import ServerConnection from './utilities/serverConnection.js';
+import lcd from './LCD20x4.js';
 
 const settings = await loadSettings();
 if (!settings) {
@@ -61,6 +62,41 @@ if (settings.server) {
   server = new ServerConnection({ settings, messageHandler: console.log });
   server.start({ settings });
 }
+
+async function closeClient(evtOrExitCodeOrError) {
+  try {
+    console.log(evtOrExitCodeOrError, 'received');
+    gameState.shutdownRequested = true;
+    console.log(
+      'Client shutdown requested. PLEASE BE PATIENT! Working on it...',
+    );
+    console.log('Client: Turning things off');
+    console.log('Client: Turning off LCD displays...');
+    for (const [, value] of Object.entries(settings.stations)) {
+      if (value.hasOwnProperty('lcdPort')) {
+        // eslint-disable-next-line no-await-in-loop
+        await lcd.display({
+          portObj: value.lcdPort.lcd.portObj,
+          operation: 'displayOff',
+          immediate: true,
+        });
+      }
+    }
+    console.log('Client: Turning off Digital readouts...');
+    for (const [key] of Object.entries(settings.stations)) {
+      if (johnnyFiveObjects.hasOwnProperty(`${key}-digitalReadout`)) {
+        johnnyFiveObjects[`${key}-digitalReadout`].off();
+      }
+    }
+    console.log('Client shutting down.');
+  } catch (e) {
+    console.error('EXIT HANDLER ERROR', e);
+  }
+}
+
+process.on('SIGINT', async () => {
+  await closeClient();
+});
 
 console.log(`Initiating Primary Game Loop...`);
 

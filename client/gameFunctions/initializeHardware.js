@@ -214,7 +214,6 @@ async function initializeHardware({ settings, gameState }) {
                 });
               }
               // TODO: Somehow fix the spamming of the sound when turning the Arming switch off.
-              // TODO: The LCD screen should say when it is waiting for OTHER stations to disarm after THIS station is disarmed.
               if (input.subType === 'arm') {
                 soundName = settings.soundFilenames.armingSwitch;
                 // Clear Start Game Button just in case it was pressed while game was not going

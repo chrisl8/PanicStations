@@ -60,6 +60,7 @@ async function display({
   green,
   blue,
   portObj,
+  immediate,
 }) {
   const wrapUp = ({ error }) => {
     if (runFromCommandLine && error) {
@@ -69,12 +70,15 @@ async function display({
     working = false;
   };
 
-  while (working) {
-    // Wait for any existing operations to finish before running this one.
-    // eslint-disable-next-line no-await-in-loop
-    await wait(1);
+  if (!immediate) {
+    while (working) {
+      // Wait for any existing operations to finish before running this one,
+      // otherwise we get weird behavior and poor formatting results.
+      // eslint-disable-next-line no-await-in-loop
+      await wait(1);
+    }
   }
-  working = true; // TODO: Do we need this?
+  working = true;
 
   if (commandList.hasOwnProperty(operation)) {
     portObj.write(Buffer.from([0xfe, commandList[operation]]), (err) => {

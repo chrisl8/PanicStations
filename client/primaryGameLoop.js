@@ -59,7 +59,7 @@ function generateNextInput({ settings, gameState }) {
         }
       }
 
-      // Find a random numbered input within range of input list and not in the recently used list.
+      // Find a random numbered input within range of the input list and not in the recently used list.
       let newInput;
       do {
         newInput = getRandomInt(1, value.inputs.length - 1);

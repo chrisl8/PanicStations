@@ -246,8 +246,8 @@ io.on('connection', (socket) => {
 app.use(express.static(`${__dirname}/public`));
 
 async function closeServer() {
-  console.log('Shutdown requested. PLEASE BE PATIENT! Working on it...');
-  console.log('Closing Database...');
+  console.log('Server shutdown requested. PLEASE BE PATIENT! Working on it...');
+  console.log('Server: Closing Database...');
   await db.close();
   process.exit();
 }

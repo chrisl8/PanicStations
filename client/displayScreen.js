@@ -147,7 +147,7 @@ export default {
 };
 
 if (esMain(import.meta)) {
-  // If this fails you can try running it with `TERM=xterm` like:
+  // If this fails, you can try running it with `TERM=xterm` like:
   // TERM=xterm node displayScreen.js
   initialize({
     settings: {
