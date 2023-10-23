@@ -19,16 +19,7 @@ function generateNextInput({ settings, gameState }) {
 
   for (const [key, value] of Object.entries(settings.stations)) {
     // Only armed stations participate
-    // TODO: Handle the case of user disarming a station during gameplay.
-    //       Should this just be ignored?
-    //       or have some other function?
-    //       Ether way, I don't think it belongs here in the generateNextInput function.
-    //       And test it.
-    //       Basically, we are using the switch position to determine if the user is in the game, so if the switch is bumped, they exit the game!
-    if (value.armed) {
-      // TODO: We may only want to do this for some stations and not others, i.e. if we are allowing one player to be done before the other,
-      //       aka. playing "out of sync"
-
+    if (value.isActiveInThisGameRound) {
       // Clear all inputs
       // eslint-disable-next-line no-loop-func
       value.inputs.forEach((input) => {
@@ -99,7 +90,7 @@ function generateNextInput({ settings, gameState }) {
       display.update({
         gameState,
         settings,
-        state: 'newInput',
+        operation: 'newInput',
         data: { station: key },
       });
     }
@@ -122,13 +113,10 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
   }
   switch (gameState.loopState) {
     case 'intro':
-      display.update({ gameState, settings, state: 'intro', data: '' });
-      // TODO: This requires all panels to be armed to start.
-      //       Change this to allow playing with only the armed panels,
-      //       when at least one is armed and a "start" button is pressed.
-      //       Check to see if ANY switch is armed,
-      //       If so, tell THAT station to push "x" button to start.
-      //              and other stations to arm to join.
+      // This is just the "kick off" section.
+      // It doesn't really do anything other than
+      // move the game into the 'waitingForPlayers' section.
+      display.update({ gameState, settings, operation: 'intro', data: {} });
       // eslint-disable-next-line no-case-declarations
       let anyStationArmed = false;
       for (const [, value] of Object.entries(settings.stations)) {
@@ -142,32 +130,51 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
       break;
     case 'waitingForPlayers': {
       let allStationsAreGo = true;
+      let atLeastOneStationArmed = false; // If all stations disarm, we fall back to the 'intro' section.
       for (const [key, value] of Object.entries(settings.stations)) {
-        const startButtonIndex = settings.stations[key].inputs.findIndex(
-          (x) => x.id === settings.stations[key].startGameButtonId,
-        );
-        if (startButtonIndex > -1) {
-          if (!settings.stations[key].inputs[startButtonIndex].hasBeenPressed) {
-            allStationsAreGo = false;
-            // TODO: Set LCD Display telling the user which button to push to start game.
-            value.lcdDisplayText = `When all players have armed, press ${settings.stations[key].inputs[startButtonIndex].label} to begin`;
-            display.update({
-              gameState,
-              settings,
-              state: 'armed',
-              data: { station: key },
-            });
+        // This will track the "in game" status of this station throughout the round.
+        // In case the station becomes disarmed by mistake or on purpose during the game,
+        // we won't entirely lose track of its input status.
+        // We can decide how to deal with a station that disarms mid-game later, but at least now
+        // we will know about it.
+        value.isActiveInThisGameRound = value.armed;
+        if (value.armed) {
+          atLeastOneStationArmed = true;
+          const startButtonIndex = settings.stations[key].inputs.findIndex(
+            (x) => x.id === settings.stations[key].startGameButtonId,
+          );
+          if (startButtonIndex > -1) {
+            if (
+              !settings.stations[key].inputs[startButtonIndex].hasBeenPressed
+            ) {
+              allStationsAreGo = false;
+              // Set Display telling the user which button to push to start this game round.
+              value.lcdDisplayText = `When all players have armed, press ${settings.stations[key].inputs[startButtonIndex].label} to begin`;
+              display.update({
+                gameState,
+                settings,
+                operation: 'useStationText',
+                data: { station: key },
+              });
+            } else {
+              value.lcdDisplayText = `Waiting for other players to press their "start" button`;
+              display.update({
+                gameState,
+                settings,
+                operation: 'useStationText',
+                data: { station: key },
+              });
+            }
           } else {
-            console.log('Other players?');
-            // TODO: Set LCD Display to tell user that we are waiting on other players to press their start button.
+            allStationsAreGo = false;
+            console.error(`Station ${key} has no startButtonIndex.`);
           }
-        } else {
-          allStationsAreGo = false;
-          console.error(`Station ${key} has no startButtonIndex.`);
         }
       }
 
-      if (allStationsAreGo) {
+      if (!atLeastOneStationArmed) {
+        gameState.loopState = 'intro';
+      } else if (allStationsAreGo) {
         gameState.loopState = 'startNewGame';
       }
       break;
@@ -183,46 +190,63 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
       };
 
       // Reset all per-station state
-      for (const [, value] of Object.entries(settings.stations)) {
+      for (const [key, value] of Object.entries(settings.stations)) {
         value.done = false;
+        if (!value.isActiveInThisGameRound) {
+          // Put some text on the non-participating stations
+          value.lcdDisplayText = `This station is out of service until this round is over`;
+          display.update({
+            gameState,
+            settings,
+            operation: 'useStationText',
+            data: { station: key },
+          });
+        }
       }
-      display.update({ gameState, settings, state: 'notStarted', data: '' });
+      display.update({
+        gameState,
+        settings,
+        operation: 'notStarted',
+        data: {},
+      });
       generateNextInput({ settings, gameState });
       gameState.loopState = 'gameInProgress';
       break;
     case 'gameInProgress':
       // TODO: Allow "async" completion of inputs.
       for (const [key, value] of Object.entries(settings.stations)) {
-        let stationDone = value.inputs[value.newInput].hasBeenPressed;
+        if (value.isActiveInThisGameRound) {
+          let stationDone = value.inputs[value.newInput].hasBeenPressed;
 
-        if (stationDone && value.inputs[value.newInput].type === 'knob') {
-          if (
-            getRange(value.inputs[value.newInput].currentStatus) !==
-            value.requiredKnobPosition
-          ) {
-            stationDone = false;
+          if (stationDone && value.inputs[value.newInput].type === 'knob') {
+            if (
+              getRange(value.inputs[value.newInput].currentStatus) !==
+              value.requiredKnobPosition
+            ) {
+              stationDone = false;
+            }
           }
-        }
 
-        if (value.done !== stationDone) {
-          value.done = stationDone;
-          if (stationDone) {
-            gameState.gameStats.gamePlayStats.push({
-              station: key,
-              input: value.inputs[value.newInput].label,
-              timeElapsed: gameState.timeElapsedForThisInput,
-              success: 1,
-            });
-            playSound({ sound: settings.soundFilenames.success, settings });
-          } else {
-            // Display command again if the "player done" goes from true to false again,
-            // which can happen with knobs while waiting on the other player.
-            display.update({
-              gameState,
-              settings,
-              state: 'newInput',
-              data: { station: key },
-            });
+          if (value.done !== stationDone) {
+            value.done = stationDone;
+            if (stationDone) {
+              gameState.gameStats.gamePlayStats.push({
+                station: key,
+                input: value.inputs[value.newInput].label,
+                timeElapsed: gameState.timeElapsedForThisInput,
+                success: 1,
+              });
+              playSound({ sound: settings.soundFilenames.success, settings });
+            } else {
+              // Display command again if the "player done" goes from true to false again,
+              // which can happen with knobs while waiting on the other player.
+              display.update({
+                gameState,
+                settings,
+                operation: 'newInput',
+                data: { station: key },
+              });
+            }
           }
         }
       }
@@ -230,7 +254,7 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
       // eslint-disable-next-line no-case-declarations
       let allStationsDone = true;
       for (const [, value] of Object.entries(settings.stations)) {
-        if (!value.done) {
+        if (value.isActiveInThisGameRound && !value.done) {
           allStationsDone = false;
         }
       }
@@ -246,11 +270,11 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
         }
         // Update display for any "done" players.
         for (const [key, value] of Object.entries(settings.stations)) {
-          if (value.done) {
+          if (value.isActiveInThisGameRound && value.done) {
             display.update({
               gameState,
               settings,
-              state: 'stationDone',
+              operation: 'stationDone',
               data: { station: key },
             });
           }
@@ -260,7 +284,12 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
             gameState.timeElapsedForThisInput <
           1
         ) {
-          display.update({ gameState, settings, state: 'maxTimeReached' });
+          display.update({
+            gameState,
+            settings,
+            operation: 'maxTimeReached',
+            data: {},
+          });
           for (const [key] of Object.entries(settings.stations)) {
             if (johnnyFiveObjects.hasOwnProperty(`${key}-digitalReadout`)) {
               johnnyFiveObjects[`${key}-digitalReadout`].print('0000');
@@ -280,16 +309,18 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
       if (settings.debug) {
         console.log('GAME OVER!');
       }
+      // TODO: If the station was disarmed during the game, we never get to see this.
+      // TODO: Maybe a timer where this displays no matter what for a moment?
       display.update({
         gameState,
         settings,
-        state: 'gameOver',
+        operation: 'gameOver',
         data: { score: gameState.gameStats.score },
       });
       playSound({ sound: settings.soundFilenames.gameOver, settings });
       // TODO: Add inputs that were not recorded (failed) yet to gameState.gameStats.gamePlayStats
       for (const [key, value] of Object.entries(settings.stations)) {
-        if (!value.done) {
+        if (value.isActiveInThisGameRound && !value.done) {
           // If it was done, it would be recorded already
           gameState.gameStats.gamePlayStats.push({
             station: key,
@@ -308,9 +339,18 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
     case 'waitingForReset':
       // eslint-disable-next-line no-case-declarations
       let allStationsDisarmed = true;
-      for (const [, value] of Object.entries(settings.stations)) {
+      for (const [key, value] of Object.entries(settings.stations)) {
         if (value.armed) {
           allStationsDisarmed = false;
+        } else {
+          // Change text on disarmed stations now to indicate waiting on other stations.
+          value.lcdDisplayText = `Disarm other stations to reset and start another round`;
+          display.update({
+            gameState,
+            settings,
+            operation: 'useStationText',
+            data: { station: key },
+          });
         }
       }
       if (allStationsDisarmed) {
@@ -356,7 +396,7 @@ async function primaryGameLoop({ settings, gameState, johnnyFiveObjects }) {
       break;
     }
     default:
-      display.update({ gameState, settings, state: 'crash', data: '' });
+      display.update({ gameState, settings, operation: 'crash', data: {} });
       break;
   }
   return gamePlayStats;
