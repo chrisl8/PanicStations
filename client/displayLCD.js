@@ -81,9 +81,22 @@ class DisplayLCD {
     }
   }
 
-  async update({ state, data, gameState, stationData }) {
+  /**
+   * Update Adafruit LCD Display
+   * @param {String} operation
+   * @param {String} data
+   * @param {Object} settings
+   * @param {Object} gameState
+   */
+  async update({ operation, data, gameState, stationData }) {
     let lcdData;
-    switch (state) {
+    switch (operation) {
+      case 'useStationText':
+        lcdData = [{ text: stationData.lcdDisplayText }];
+        break;
+      case 'off':
+        lcdData = { operation: 'displayOff' };
+        break;
       case 'intro':
         lcdData = [
           {
@@ -97,9 +110,6 @@ class DisplayLCD {
             input: centerLine('to join!'),
           },
         ];
-        break;
-      case 'armed':
-        lcdData = [{ text: stationData.lcdDisplayText }];
         break;
       case 'notStarted':
         break;
@@ -167,7 +177,18 @@ class DisplayLCD {
         await wait(1);
       }
       await lcd.display({ portObj: this.portObj, operation: 'clear' });
-      if (lcdData.length === 1 && lcdData[0].hasOwnProperty('text')) {
+      if (
+        typeof lcdData === 'object' &&
+        !Array.isArray(lcdData) &&
+        lcdData.operation
+      ) {
+        console.log('displayLCD', lcdData.operation);
+        // eslint-disable-next-line no-await-in-loop
+        await lcd.display({
+          portObj: this.portObj,
+          operation: lcdData.operation,
+        });
+      } else if (lcdData.length === 1 && lcdData[0].hasOwnProperty('text')) {
         await formatAndSendToLCD({
           portObj: this.portObj,
           text: lcdData[0].text,
