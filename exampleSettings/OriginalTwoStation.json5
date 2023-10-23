@@ -1,7 +1,7 @@
 {
-  debug: true, // Use this to see input on screen
+  debug: false, // Use this to see input on screen
   // Note that if you use debug and useScreen both it will make a mess on the screen
-  noTimeOut: true, // Give unlimited time for each input. For testing. This ruins the game.
+  noTimeOut: false, // Give unlimited time for each input. For testing. This ruins the game.
   loopTime: 100,
   useScreen: false, // Whether the game use the screen to display information or not
   johnnyFiveRepl: false,
