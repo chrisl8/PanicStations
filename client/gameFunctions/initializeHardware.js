@@ -7,6 +7,9 @@ import getRange from '../include/getRange.js';
 // TODO: This is Arduino Mega specific
 const pwmPins = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 44, 45, 46];
 
+const reverseNumber = (inputNumber, rangeMinimum, rangeMaximum) =>
+  rangeMaximum + rangeMinimum - inputNumber;
+
 const smartLedActions = ({ settings, led, action, pinSettings, value }) => {
   switch (action) {
     case 'on':
@@ -352,36 +355,12 @@ async function initializeHardware({ settings, gameState }) {
                 pin: input.ledPin,
                 isAnode: input.ledIsAnode && pwmPins.indexOf(input.ledPin) > -1,
               });
-              // Initialize LEDs as off.
-              smartLedActions({
-                settings,
-                led: johnnyFiveObjects[
-                  `${key}-${input.type}-${input.subType}-${input.id}-led`
-                ],
-                action: 'off',
-                pinSettings: input,
-              });
             }
-
-            // Inject the `sensor` hardware into
-            // the Repl instance's context;
-            // allows direct command line access
-            // board.repl.inject({
-            //     pot: potentiometer
-            // });
-
-            // "data" get the current reading from the potentiometer
-            /*
-                  potentiometer.on("data", function() {
-                    console.log(this.value, this.raw);
-                  });
-                  */
-
             johnnyFiveObjects[
               `${key}-${input.type}-${input.subType}-${input.id}`
             ].on('change', function () {
               // Do NOT make this an arrow function!
-              // this.value must reference the this that called it!
+              // this.value must reference the "this" that called it!
               input.initialized = true;
               input.hasBeenPressed = true;
               input.currentStatus = this.value;
@@ -392,7 +371,9 @@ async function initializeHardware({ settings, gameState }) {
               }
               if (input.ledPin) {
                 // TODO: More nuanced control of LED based on various things.
-                let brightnessValue = (this.value * 255) / 1024;
+                // Make LED brightness go from left to right as most people expect:
+                const reversedValue = reverseNumber(this.value, 0, 1024);
+                let brightnessValue = (reversedValue * 255) / 1024;
                 if (brightnessValue < 50) {
                   brightnessValue = 0;
                 }
